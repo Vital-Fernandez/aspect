@@ -1,0 +1,99 @@
+[features_number]
+undefined = 0
+white-noise = 1
+continuum = 2
+emission = 3
+cosmic-ray = 4
+pixel-line = 5
+broad = 6
+doublet = 7
+peak = 8
+absorption = 9
+dead-pixel = 10
+
+[colors]
+undefined = 'black'
+white-noise = '#C41E3A'     # Red
+continuum = '#F48CBA'       # Pink
+emission = '#00FF98'        # Spring Green
+cosmic-ray= '#FFF468'       # Yellow
+pixel-line = '#0070DD'      # Blue
+broad = '#A330C9'           # Dark magenta
+doublet = '#3FC7EB'         # Light blue
+peak = '#C69B6D'            # Tan
+absorption = '#FF7C0A'      # Orange
+dead-pixel = '#8788EE'      # Purple
+
+[decision_matrices]
+
+choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
+            [0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
+            [0,  1,  2,  0,  0,  0,  0,  0,  0,  0,  0], #continuum
+            [0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  0], #emission
+            [0,  1,  0,  1,  2,  0,  0,  0,  0,  0,  0], #cosmic-ray
+            [0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0], #pixel-line
+            [0,  1,  0,  1,  0,  0,  2,  0,  0,  0,  0], #broad
+            [0,  1,  0,  1,  0,  0,  0,  2,  0,  0,  0], #doublet
+            [0,  1,  0,  1,  0,  0,  0,  0,  2,  0,  0], #peak
+            [0,  1,  0,  0,  0,  0,  0,  0,  0,  2,  0], #absorption
+            [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  2]] #dead-pixel
+
+#            u   w   c   e   c   p   b   d   p   a   d
+#            n   h   o   m   o   i   r   o   e   b   e
+#            d   i   n   i   s   x   o   u   a   s   a
+#            e   t   t   s   m   e   a   b   k   o   d
+#            f   e   i   s   i   l   d   l       r   -
+#            i   -   n   i   c   -       e       p   p
+#            n   n   u   o   -   l       t       t   i
+#            e   o   u   n   r   i               i   x
+#            d   i   m       a   n               o   e
+#                s           y   e               n   l
+#                e
+
+time =     [[0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
+            [0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1], #white-noise
+            [0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
+            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #emission
+            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #cosmic-ray
+            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #pixel-line
+            [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0], #broad
+            [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0], #doublet
+            [0,  0,  0,  1,  1,  1,  1,  1,  0,  0,  0], #peak
+            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #absorption
+            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]] #dead-pixel
+#            u   w   c   e   c   p   b   d   p   a   d
+#            n   h   o   m   o   i   r   o   e   b   e
+#            d   i   n   i   s   x   o   u   a   s   a
+#            e   t   t   s   m   e   a   b   k   o   d
+#            f   e   i   s   i   l   d   l       r   -
+#            i   -   n   i   c   -       e       p   p
+#            n   n   u   o   -   l       t       t   i
+#            e   o   u   n   r   i               i   x
+#            d   i   m       a   n               o   e
+#                s           y   e               n   l
+#                e
+
+
+
+#choice =   [[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #undefined
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #continuum
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #emission
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #cosmic-ray
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #pixel-line
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #broad
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #doublet
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #peak
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #absorption
+#            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]] #dead-pixel
+##            u   w   c   e   c   p   b   d   p   a   d
+##            n   h   o   m   o   i   r   o   e   b   e
+##            d   i   n   i   s   x   o   u   a   s   a
+##            e   t   t   s   m   e   a   b   k   o   d
+##            f   e   i   s   i   l   d   l       r   -
+##            i   -   n   i   c   -       e       p   p
+##            n   n   u   o   -   l       t       t   i
+##            e   o   u   n   r   i               i   x
+##            d   i   m       a   n               o   e
+##                s           y   e               n   l
+##                e
