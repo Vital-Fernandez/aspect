@@ -4,6 +4,7 @@ from .io import Aspect_Error
 
 # Log variable
 _logger = logging.getLogger('aspect')
+np.random.seed(42)
 
 
 def monte_carlo_expansion(flux_array, err_array, n_mc, for_loop=True):
@@ -92,3 +93,61 @@ def white_noise_scale(flux_arr):
     output_type = 1 if diff > 10 else 2
 
     return output_type
+
+
+def detection_function(x_ratio):
+
+    # Original
+    # 2.5 + 1/np.square(x_ratio - 0.1) + 0.5 * np.square(x_ratio)
+
+    return 0.5 * np.power(x_ratio, 2) - 0.5 * x_ratio + 5
+
+
+def cosmic_ray_function(x_ratio, res_ratio_check=True):
+
+    # Resolution ration
+    if res_ratio_check:
+        output = np.exp(0.5 * np.power(x_ratio, -2))
+
+    # Intensity ratio
+    else:
+        output = 1/np.sqrt(2 * np.log(x_ratio))
+
+    return output
+
+
+def stratify_sample(x_arr, y_arr, n_samples=None, categories=None, randomize=True):
+
+    # Inspect input sample
+    unique_categories, counts = np.unique(y_arr, return_counts=True)
+    min_count = min(counts)
+
+    # Use all categories and the minimum number of counts if not provided
+    n_samples = n_samples if n_samples is not None else min_count
+    categories = categories if categories is not None else unique_categories
+
+    # Check input sample size is below category
+    if n_samples > min_count:
+        _logger.warning(f'The input sample minimun size category ({unique_categories[counts==min_count]} = {min_count})'
+                        f' is less than the requested input size ({n_samples}). The minimum count will be used instead.')
+        n_samples = min_count
+
+    # Empty mask for the target categories
+    selection_mask = np.zeros(y_arr.size, dtype=bool)
+
+    # Mark indices for each category
+    print(f'\nInput sample has {y_arr.shape[0]} entries:')
+    for j, category in enumerate(categories):
+        print(f'- {category}: {counts[j]}')
+        category_indices = np.where(y_arr == category)[0]
+        sampled_indices = np.random.choice(category_indices, n_samples, replace=False)
+        selection_mask[sampled_indices] = True
+    print(f'Cropping to {n_samples} entries per category')
+
+    selection_mask = np.nonzero(selection_mask)[0]
+
+    if randomize:
+        np.random.shuffle(selection_mask)
+
+    return x_arr[selection_mask, :], y_arr[selection_mask]
+

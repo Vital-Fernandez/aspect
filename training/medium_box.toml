@@ -1,0 +1,72 @@
+[meta]
+version = 'mediumbox_v3'
+results_folder = '/home/vital/Astrodata/aspect/medium_box'
+scale = 'min-max'
+
+[properties_mediumbox_v3]
+
+# Global
+box_pixels = 12
+n_sigma = 6
+err_n_sigma = 4
+
+# Resolution ratio (line sigma / instrument resolution) parameters
+res_ratio_min = 0.1
+instr_res = 1
+
+# Intensity ratio (line amplitude / sigma noise) parameters
+int_ratio_min = 0.01
+int_ratio_max = 10000
+int_ratio_log_base = 10000
+
+# Sample size
+int_ratio_points = 5000
+res_ratio_points = 1000
+
+cosmic_ray_boundary = 100
+
+# Continuum configuration
+noise_loc = 0
+noise_min = 1
+noise_max = 100.0
+
+cont_level = 0
+angle_min = -45
+angle_max = 45
+
+mu_line = 0
+uncrop_array_size = 400
+
+# Cosmic ray
+cosmic-ray.'cosmic_ray_boundary' = 100
+
+# White noise
+white_noise.'min_int_ratio' = 0.01
+white_noise.'max_int_ratio' = 0.3
+
+# Doublet
+doublet.'min_res_ratio' = 1
+doublet.'max_res_ratio' = 1.6
+doublet.'min_int_ratio' = 20
+doublet.'max_int_ratio' = 1000
+doublet.'min_separation' = 1.2
+doublet.'max_separation' = 3
+doublet.'discrepancy_factors' = [0.7, 1.3]
+
+
+[randomforest_mediumbox_v3]
+box_size = 12
+sample_size = 300000
+test_sample_size_fraction = 0.1
+
+categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet', 'dead-pixel', 'absorption']
+estimator."module" = "sklearn.ensemble"
+estimator."class" = "RandomForestClassifier"
+estimator_params."random_state" = 42
+estimator_params."n_estimators" = 60
+estimator_params."max_depth" = 8
+estimator_params."max_features" = 'sqrt'
+estimator_params."verbose" = 0
+estimator_params."n_jobs" = 15
+estimator_params."min_samples_split" = 2000
+estimator_params."min_samples_leaf" = 2000

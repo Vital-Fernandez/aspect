@@ -20,10 +20,12 @@ class Aspect_Error(Exception):
 
 # Read lime configuration file
 with open(_CONF_FILE, mode="rb") as fp:
-    cfg_aspect = tomllib.load(fp)
+    cfg = tomllib.load(fp)
 
 # Default feature detection model
-DEFAULT_MODEL_ADDRESS = _MODEL_FOLDER/'training_multi_sample_v4_min-max_8categories_v4_175000points_angleSample_numpy_array_model.joblib'
+# DEFAULT_MODEL_ADDRESS = _MODEL_FOLDER/'training_multi_sample_v4_min-max_8categories_v4_175000points_angleSample_numpy_array_model.joblib'
+# DEFAULT_MODEL_ADDRESS = _MODEL_FOLDER/'aspect_min-max_mediumbox_v1_model.joblib'
+DEFAULT_MODEL_ADDRESS = _MODEL_FOLDER/'aspect_min-max_mediumbox_v3_model.joblib'
 
 
 def read_trained_model(file_address):
@@ -54,3 +56,42 @@ def check_lisa(model1D, model2D, setup_cfg):
         coeffs2D = np.squeeze(model2D_job.coef_), np.squeeze(model2D_job.intercept_)
 
     return coeffs1D, coeffs2D
+
+
+# Function to load configuration file
+def load_cfg(file_address, fit_cfg_suffix='_line_fitting'):
+
+    """
+
+    This function reads a configuration file with the `toml format <https://toml.io/en/>`_.
+
+    :param file_address: Input configuration file address.
+    :type file_address: str, pathlib.Path
+
+    :param fit_cfg_suffix: Suffix for LiMe configuration sections. The default value is "_line_fitting".
+    :type fit_cfg_suffix:  str
+
+    :return: Parsed configuration data
+    :type: dict
+
+    """
+
+    file_path = Path(file_address)
+
+    # Open the file
+    if file_path.is_file():
+
+        # Toml file
+        with open(file_path, mode="rb") as fp:
+            cfg = tomllib.load(fp)
+
+    else:
+        raise Aspect_Error(f'The configuration file was not found at: {file_address}')
+
+    return cfg
+
+def load_model(file_address):
+
+    ml_function = jload(file_address)
+
+    return ml_function

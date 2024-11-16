@@ -1,4 +1,4 @@
-[features_number]
+[shape_number]
 undefined = 0
 white-noise = 1
 continuum = 2
@@ -26,9 +26,13 @@ dead-pixel = '#8788EE'      # Purple
 
 [decision_matrices]
 
+#                   Orange      Blue
+decision_colors = ['#be6530', '#72a7c2']
+
+choice_labels = ['1st option', '2nd option']
 choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
-            [0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
-            [0,  1,  2,  0,  0,  0,  0,  0,  0,  0,  0], #continuum
+            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
+            [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
             [0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  0], #emission
             [0,  1,  0,  1,  2,  0,  0,  0,  0,  0,  0], #cosmic-ray
             [0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0], #pixel-line
@@ -37,7 +41,6 @@ choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
             [0,  1,  0,  1,  0,  0,  0,  0,  2,  0,  0], #peak
             [0,  1,  0,  0,  0,  0,  0,  0,  0,  2,  0], #absorption
             [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  2]] #dead-pixel
-
 #            u   w   c   e   c   p   b   d   p   a   d
 #            n   h   o   m   o   i   r   o   e   b   e
 #            d   i   n   i   s   x   o   u   a   s   a
@@ -50,13 +53,14 @@ choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
 #                s           y   e               n   l
 #                e
 
+time_labels = ['Current detection', 'Past detection']
 time =     [[0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
             [0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1], #white-noise
             [0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
             [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #emission
-            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #cosmic-ray
-            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #pixel-line
-            [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0], #broad
+            [0,  0,  0,  1,  0,  0,  0,  1,  0,  0,  0], #cosmic-ray
+            [0,  0,  0,  1,  0,  0,  0,  1,  0,  0,  0], #pixel-line
+            [0,  0,  0,  1,  0,  0,  0,  1,  0,  0,  0], #broad
             [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0], #doublet
             [0,  0,  0,  1,  1,  1,  1,  1,  0,  0,  0], #peak
             [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #absorption
@@ -97,3 +101,13 @@ time =     [[0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
 ##            d   i   m       a   n               o   e
 ##                s           y   e               n   l
 ##                e
+
+[plots_format]
+dm."figure.dpi" = 300
+dm."figure.figsize" = [5, 5]
+dm."axes.titlesize" = 9
+dm."axes.labelsize" = 14
+dm."legend.fontsize" = 7
+dm."xtick.labelsize" = 12
+dm."ytick.labelsize" = 12
+dm."font.size" = 5
