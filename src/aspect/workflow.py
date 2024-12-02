@@ -10,13 +10,42 @@ TIME_DM = np.array(cfg['decision_matrices']['time'])
 # TODO Larger box overwrites small
 # TODO COMPLEX overwrites simple
 
-def unpack_spec_flux(spectrum):
+def unpack_spec_flux(spectrum, rest_wl_lim):
 
-    pixels_mask = spectrum.flux.mask if np.ma.isMaskedArray(spectrum.flux) else np.zeros(spectrum.flux).astype(bool)
-    flux_arr = spectrum.flux if not np.ma.isMaskedArray(spectrum.flux) else spectrum.flux.data[~spectrum.flux.mask]
-    err_arr = spectrum.err_flux if not np.ma.isMaskedArray(spectrum.err_flux) else spectrum.err_flux.data[~spectrum.err_flux.mask]
+    # Extract the mask if masked array
+    mask_check = np.ma.isMaskedArray(spectrum.flux)
+    pixel_mask = spectrum.flux.mask if mask_check else np.zeros(spectrum.flux.size).astype(bool)
 
-    return flux_arr, err_arr, pixels_mask
+    # Limit to region if requested
+    if rest_wl_lim is not None:
+        wave_rest = spectrum.wave_rest if not mask_check else spectrum.wave_rest.data
+        # pixel_mask = ~pixel_mask | ((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
+        # maskA = pixel_mask
+        # maskB = ~((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
+        # maskC = maskA | maskB
+        # pixel_mask = ~maskC
+
+        pixel_mask = pixel_mask |  ~((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
+
+    # Extract flux and error arrays and invert the mask for location of the valid data indeces
+    pixel_mask = ~pixel_mask
+    flux_arr = spectrum.flux[pixel_mask] if not mask_check else spectrum.flux.data[pixel_mask]
+    err_arr = spectrum.err_flux[pixel_mask] if not mask_check else spectrum.err_flux.data[pixel_mask]
+    idcs_data_mask = np.flatnonzero(pixel_mask)
+
+    # pixels_mask = spectrum.flux.mask if mask_check else np.zeros(spectrum.flux.size).astype(bool)
+    # flux_arr = spectrum.flux if not mask_check else spectrum.flux.data[~spectrum.flux.mask]
+    # err_arr = spectrum.err_flux if not mask_check else spectrum.err_flux.data[~spectrum.err_flux.mask]
+    #
+    # if rest_wl_lim is not None:
+    #     pixels_mask = ~pixels_mask
+    #     wave_rest = spectrum.wave_rest if not mask_check else spectrum.wave_rest.data
+    #     pixels_mask = pixels_mask & (wave_rest > rest_wl_lim[0]) & (wave_rest> rest_wl_lim[1])
+    #     idcs_data_mask = np.flatnonzero(pixels_mask)
+    # else:
+    #     idcs_data_mask = np.flatnonzero(~pixels_mask)
+
+    return flux_arr, err_arr, idcs_data_mask
 
 
 def enbox_spectrum(input_flux, box_size, range_box):
@@ -35,13 +64,24 @@ def enbox_spectrum(input_flux, box_size, range_box):
     return input_flux
 
 
+def detection_spectrum_prechecks(y_arr, box_size, idcs_data):
+
+    valid = True
+
+    # Box bigger than spectrum or all entries are masked
+    if (y_arr.size < box_size) or (idcs_data.size < box_size):
+        valid = False
+
+    return valid
+
+
 class ModelManager:
 
     def __init__(self, model_address=None, n_jobs=None, verbose=0):
 
         self.cfg = None
         self.detection_model = None
-        self.size_arr = None
+        self.b_pixels_arr = None
         self.scale = None
         self.log_base = None
 
@@ -62,7 +102,8 @@ class ModelManager:
         self.predictor.verbose = verbose  # No output message
 
         # Array with the boxes size
-        self.size_arr = np.atleast_1d(self.cfg['properties']['box_size'])
+        self.b_pixels_arr = np.atleast_1d(self.cfg['properties']['box_size'])
+        self.b_pixels_range = np.atleast_2d(np.arange(self.b_pixels_arr [0]))
 
         # Scaling properties
         self.scale = self.cfg['properties']['scale']
@@ -121,31 +162,31 @@ class SpectrumDetector:
 
         return
 
-    def detection(self, feature_list=None, bands=None, show_steps=False):
+    def detection(self, feature_list=None, bands=None, exclude_continuum=True, show_steps=False, rest_wl_lim=None):
 
         # Support variables
-        n_pixels = self._spec.flux.size
-        box_size = self.model.size_arr[0]
-        box_range = np.arange(box_size)
-
-        # Empty containers
-        self.pred_arr = np.zeros(n_pixels, dtype=np.int64)
-        self.conf_arr = np.zeros(n_pixels, dtype=np.int64)
-        self.seg_pred = np.zeros(box_size, dtype=np.int64)
-        self.seg_conf = np.zeros(box_size, dtype=np.int64)
+        box_size = self.model.b_pixels_arr[0]
+        box_range = self.model.b_pixels_range[0]
 
         # Remove masks from flux and uncertainty
-        y_arr, err_arr, pixel_mask = unpack_spec_flux(self._spec)
-        # invers_mask = ~pixel_mask
+        y_arr, err_arr, idcs_data = unpack_spec_flux(self._spec, rest_wl_lim)
 
-        if (y_arr.size > box_size) or ~np.all(pixel_mask):
+        # Check the validity of the spectrum
+        if detection_spectrum_prechecks(y_arr, box_size, idcs_data):
+
+            # Empty containers
+            self.pred_arr = np.zeros(self._spec.flux.size, dtype=np.int64)
+            self.conf_arr = np.zeros(self._spec.flux.size, dtype=np.int64)
+
+            self.seg_pred = np.zeros(box_size, dtype=np.int64)
+            self.seg_conf = np.zeros(box_size, dtype=np.int64)
 
             # Reshape spectrum to box size
             y_enbox = enbox_spectrum(y_arr, box_size, box_range)
             err_enbox = enbox_spectrum(err_arr, box_size, box_range)
 
             # MC expansion
-            y_enbox =  monte_carlo_expansion(y_enbox, err_enbox, self.n_mc, for_loop=False)
+            y_enbox = monte_carlo_expansion(y_enbox, err_enbox, self.n_mc, for_loop=False)
 
             # Scaling
             y_norm = feature_scaling(y_enbox, 'min-max', 1)
@@ -158,13 +199,17 @@ class SpectrumDetector:
             # Get the count of types detected on Monte-Carlo
             counts_categories = np.apply_along_axis(np.bincount, axis=1, arr=y_pred, minlength=self.model.n_categories)
 
-            # Loop through non white-noise regions:
-            idcs_valid = np.nonzero(counts_categories[:, 1] < self.white_noise_maximum)[0]
-            for idx in idcs_valid:
+            # Exclude white-noise regions from review:
+            if exclude_continuum:
+                idcs_detection = np.flatnonzero(counts_categories[:, 1] < self.white_noise_maximum)
+            else:
+                idcs_detection = np.arange(y_arr.size - box_size)
+
+            for idx in idcs_detection:
 
                 # Get segment arrays
-                self.seg_pred[:] = self.pred_arr[idx:idx + box_size]
-                self.seg_conf[:] = self.conf_arr[idx:idx + box_size]
+                self.seg_pred[:] = self.pred_arr[idcs_data][idx:idx + box_size]
+                self.seg_conf[:] = self.conf_arr[idcs_data][idx:idx + box_size]
 
                 # Count
                 counts = counts_categories[idx, :]
@@ -179,21 +224,22 @@ class SpectrumDetector:
                 # Only pass if more than half
                 half_check = idcs_pred[6:].sum() > 5
                 if half_check:
-                    idcs_pred = np.nonzero(idcs_pred)
+                    idcs_pred = np.flatnonzero(idcs_pred)
                     self.seg_pred[idcs_pred] = new_pred[idcs_pred]
                     self.seg_conf[idcs_pred] = new_conf[idcs_pred]
                 else:
-                    self.seg_pred[:] = self.pred_arr[idx:idx + box_size]
-                    self.seg_conf[:] = self.conf_arr[idx:idx + box_size]
+                    self.seg_pred[:] = self.pred_arr[idcs_data][idx:idx + box_size]
+                    self.seg_conf[:] = self.conf_arr[idcs_data][idx:idx + box_size]
 
                 if show_steps:
                     self.plot_steps(y_norm[idx, :], idx, counts, idcs_categories, out_type, out_confidence,
-                                    self.pred_arr[idx:idx + box_size], self.conf_arr[idx:idx + box_size],
+                                    self.pred_arr[idcs_data][idx:idx + box_size], self.conf_arr[idcs_data][idx:idx + box_size],
                                     idcs_pred, new_pred, new_conf)
 
                 # Assign new categories and confidence
-                self.pred_arr[idx:idx + box_size] = self.seg_pred[:]
-                self.conf_arr[idx:idx + box_size] = self.seg_conf[:]
+                self.pred_arr[idcs_data[idx:idx + box_size]] = self.seg_pred[:]
+                self.conf_arr[idcs_data[idx:idx + box_size]] = self.seg_conf[:]
+
 
 
 
@@ -213,7 +259,7 @@ class SpectrumDetector:
 
             # Two detections
             case 2:
-                category_candidates = np.nonzero(idcs_categories)[0]
+                category_candidates = np.flatnonzero(idcs_categories)
                 idx_output = CHOICE_DM[category_candidates[0], category_candidates[1]]
                 output_type, output_count = category_candidates[idx_output], counts_categories[idcs_categories][idx_output]
                 return output_type, output_count

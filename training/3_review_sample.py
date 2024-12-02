@@ -11,9 +11,8 @@ norm = sample_cfg['meta']['scale']
 output_folder = Path(sample_cfg['meta']['results_folder'])
 
 # Read the sample files:
-
 y_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt', dtype=str)
-data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_{version}.txt', delimiter=',')
+data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',')
 
 # Plot sample
 n_points = 1000
