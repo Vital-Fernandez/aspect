@@ -19,12 +19,6 @@ def unpack_spec_flux(spectrum, rest_wl_lim):
     # Limit to region if requested
     if rest_wl_lim is not None:
         wave_rest = spectrum.wave_rest if not mask_check else spectrum.wave_rest.data
-        # pixel_mask = ~pixel_mask | ((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
-        # maskA = pixel_mask
-        # maskB = ~((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
-        # maskC = maskA | maskB
-        # pixel_mask = ~maskC
-
         pixel_mask = pixel_mask |  ~((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
 
     # Extract flux and error arrays and invert the mask for location of the valid data indeces
@@ -32,18 +26,6 @@ def unpack_spec_flux(spectrum, rest_wl_lim):
     flux_arr = spectrum.flux[pixel_mask] if not mask_check else spectrum.flux.data[pixel_mask]
     err_arr = spectrum.err_flux[pixel_mask] if not mask_check else spectrum.err_flux.data[pixel_mask]
     idcs_data_mask = np.flatnonzero(pixel_mask)
-
-    # pixels_mask = spectrum.flux.mask if mask_check else np.zeros(spectrum.flux.size).astype(bool)
-    # flux_arr = spectrum.flux if not mask_check else spectrum.flux.data[~spectrum.flux.mask]
-    # err_arr = spectrum.err_flux if not mask_check else spectrum.err_flux.data[~spectrum.err_flux.mask]
-    #
-    # if rest_wl_lim is not None:
-    #     pixels_mask = ~pixels_mask
-    #     wave_rest = spectrum.wave_rest if not mask_check else spectrum.wave_rest.data
-    #     pixels_mask = pixels_mask & (wave_rest > rest_wl_lim[0]) & (wave_rest> rest_wl_lim[1])
-    #     idcs_data_mask = np.flatnonzero(pixels_mask)
-    # else:
-    #     idcs_data_mask = np.flatnonzero(~pixels_mask)
 
     return flux_arr, err_arr, idcs_data_mask
 
@@ -313,11 +295,5 @@ class SpectrumDetector:
 
         plt.tight_layout()
         plt.show()
-
-        # fig, ax = plt.subplots()
-        # ax.step(np.arange(self.seg_flux.size), self.seg_flux, color=cfg_aspect['colors'][aspect_model.number_feature_dict[output_type]])
-        # ax.set_title(f'{aspect_model.number_feature_dict[output_type]} ({output_type})')
-        # plt.show()
-
 
         return

@@ -1,0 +1,6 @@
+# MANIFEST.in
+
+include src/aspect/aspect.toml
+include src/aspect/changelog.txt
+include src/aspect/models/aspect_min-max_mediumbox_v3_model.joblib
+include src/aspect/models/aspect_min-max_mediumbox_v3_model.toml
