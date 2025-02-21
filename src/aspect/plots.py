@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt, gridspec, colors, rc_context
 from .io import Aspect_Error, cfg
-from lime.plots import theme
+from lime.plotting.plots import theme
 from .tools import detection_function, stratify_sample
 
 

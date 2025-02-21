@@ -10,30 +10,50 @@ TIME_DM = np.array(cfg['decision_matrices']['time'])
 # TODO Larger box overwrites small
 # TODO COMPLEX overwrites simple
 
+def flux_to_image(flux_array, approximation, model_2D):
+
+    if model_2D is not None:
+
+        img_flux_array = np.tile(flux_array[:, None, :, :], (1, approximation.size, 1, 1))
+        img_flux_array = img_flux_array > approximation[::-1, None, None]
+        img_flux_array = img_flux_array.astype(int)
+        img_flux_array = img_flux_array.reshape((flux_array.shape[0], 1, -1, flux_array.shape[-1]))
+        img_flux_array = img_flux_array.squeeze()
+
+        # Original
+        # flux_array_0 = flux_array[:, :, 0]
+        # Old_img = np.tile(flux_array_0[:, None, :], (1, approximation.size, 1))
+        # Old_img = Old_img > approximation[::-1, None]
+        # Old_img = Old_img.astype(int)
+        # Old_img = Old_img.reshape((flux_array_0.shape[0], 1, -1))
+        # Old_img = Old_img.squeeze()
+
+    else:
+      img_flux_array = None
+
+    return img_flux_array
+
+
 def unpack_spec_flux(spectrum, rest_wl_lim):
 
     # Extract the mask if masked array
-    mask_check = np.ma.isMaskedArray(spectrum.flux)
-    pixel_mask = spectrum.flux.mask if mask_check else np.zeros(spectrum.flux.size).astype(bool)
+    pixel_mask = spectrum.flux.mask
 
     # Limit to region if requested
     if rest_wl_lim is not None:
-        wave_rest = spectrum.wave_rest if not mask_check else spectrum.wave_rest.data
+        wave_rest = spectrum.wave_rest.data
         pixel_mask = pixel_mask |  ~((wave_rest > rest_wl_lim[0]) & (wave_rest < rest_wl_lim[1]))
 
     # Extract flux and error arrays and invert the mask for location of the valid data indeces
     pixel_mask = ~pixel_mask
-    flux_arr = spectrum.flux[pixel_mask] if not mask_check else spectrum.flux.data[pixel_mask]
-    err_arr = spectrum.err_flux[pixel_mask] if not mask_check else spectrum.err_flux.data[pixel_mask]
+    flux_arr = spectrum.flux.data[pixel_mask]
+    err_arr = spectrum.err_flux.data[pixel_mask]
     idcs_data_mask = np.flatnonzero(pixel_mask)
 
     return flux_arr, err_arr, idcs_data_mask
 
 
 def enbox_spectrum(input_flux, box_size, range_box):
-
-    # Use only the true entries from the mask
-    # flux_array = input_flux if not np.ma.isMaskedArray(input_flux) else input_flux.data[~input_flux.mask]
 
     # Reshape to the detection interval
     n_intervals = input_flux.size - box_size + 1
@@ -274,7 +294,7 @@ class SpectrumDetector:
     def plot_steps(self, y_norm, idx, counts, idcs_categories, out_type, out_confidence, old_pred, old_conf,
                    idcs_pred, new_pred, new_conf):
 
-        x_arr = self._spec.wave_rest if not np.ma.isMaskedArray(self._spec.wave_rest) else self._spec.wave_rest.data[~self._spec.wave_rest.mask]
+        x_arr = self._spec.wave_rest.data[~self._spec.wave_rest.mask]
         x_sect = x_arr[idx:idx+y_norm.shape[0]]
         print(f'Idx "{idx}"; counts: {counts}; Output: {model.number_feature_dict[out_type]} ({out_type})')
 
