@@ -6,7 +6,7 @@ from time import time
 
 # Observed and theoretical transitions
 observed = np.array([28947.80952381, 31794.76190476, 40011.71428572, 42057.42857143, 47802.47619048])
-theoretical = np.array(    [3728.48, 4862.691, 4960.295, 4996.25375, 6564.632, 9533.2, 10833, 12821.576, 16447.9555, 18756.096])
+theoretical = np.array([3728.48, 4862.691, 4960.295, 4996.25375, 6564.632, 9533.2, 10833, 12821.576, 16447.9555, 18756.096])
 
 
 # Residual computation function

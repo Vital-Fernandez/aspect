@@ -12,7 +12,7 @@ from pathlib import Path
 from .io import cfg as aspect_cfg
 
 
-def get_training_test_sets(x_arr, y_arr, test_fraction, random_state=None):
+def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features, n_scale_features, random_state=None):
 
     # Split into training and testing:
     print(f'\nSplitting sample with categories:')
@@ -21,7 +21,7 @@ def get_training_test_sets(x_arr, y_arr, test_fraction, random_state=None):
                                  test_size=int(y_arr.size * test_fraction), random_state=random_state)
 
     for train_index, test_index in sss.split(x_arr, y_arr):
-        X_train, X_test = x_arr[train_index, 2:], x_arr[test_index, 2:]
+        X_train, X_test = x_arr[train_index, -n_pixel_features-n_scale_features:], x_arr[test_index, -n_pixel_features-n_scale_features:]
         y_train, y_test = y_arr[train_index], y_arr[test_index]
 
     # Convert strings to integers
@@ -41,7 +41,9 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
 
     # Split into training and testing:
     print(f'\nSplitting sample with categories:')
-    X_train, y_train, X_test, y_test = get_training_test_sets(x_arr, y_arr, test_fraction, random_state)
+    X_train, y_train, X_test, y_test = get_training_test_sets(x_arr, y_arr, test_fraction,
+                                                              n_pixel_features=fit_cfg['box_size'], n_scale_features=1,
+                                                              random_state=random_state)
 
     # Run the training
     print(f'\nTraining: {y_train.size/len(fit_cfg["categories"]):.0f} * {len(fit_cfg["categories"])} = {y_train.size}  points ({model_label})')

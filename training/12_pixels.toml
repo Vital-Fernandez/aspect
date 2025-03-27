@@ -1,14 +1,16 @@
 [meta]
-version = 'mediumbox_v4'
+version = '12_pixels_v6'
 results_folder = '/home/vital/Astrodata/aspect/medium_box'
 scale = 'min-max'
+name = '12_pixels'
 
-[properties_mediumbox_v4]
+[properties_12_pixels_v6]
 
 # Global
 box_pixels = 12
 n_sigma = 6
 err_n_sigma = 4
+categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet', 'dead-pixel', 'absorption']
 
 # Resolution ratio (line sigma / instrument resolution) parameters
 res_ratio_min = 0.1
@@ -18,6 +20,7 @@ instr_res = 1
 int_ratio_min = 0.01
 int_ratio_max = 10000
 int_ratio_log_base = 10000
+noise_cont = 1
 
 # Sample size
 int_ratio_points = 5000 #5000
@@ -54,7 +57,7 @@ doublet.'max_separation' = 3
 doublet.'discrepancy_factors' = [0.7, 1.3]
 
 
-[randomforest_mediumbox_v4]
+[randomforest_12_pixels_v6]
 box_size = 12
 sample_size = 300000
 test_sample_size_fraction = 0.1

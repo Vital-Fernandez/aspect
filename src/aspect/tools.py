@@ -7,40 +7,22 @@ _logger = logging.getLogger('aspect')
 np.random.seed(42)
 
 
-def monte_carlo_expansion(flux_array, err_array, n_mc, for_loop=True):
+def monte_carlo_expansion(flux_array, err_array, n_mc, n_pixels):
 
+    # Get the noise parameter from the observations uncertainty on a constant scalar
+    noise_scale = err_array if np.isscalar(err_array) else err_array[:, -n_pixels:][..., None]
 
-    # # Get the noise scale for the selections
-    # if noise_scale is None:
-    #     noise_scale = self._spec.err_flux if self._spec.err_flux is not None else self._spec.cont_std
-    #
-    #     if noise_scale is None:
-    #         _logger.warning(f"No flux uncertainty provided for the line detection. There won't be a confidence value"
-    #                         f" for the predictions.")
-    #         self.n_mc = 1
+    # Generate error matrix only for the flux features
+    noise_array = np.empty((flux_array.shape[0], flux_array.shape[1], n_mc))
+    noise_array[:, -n_pixels:] = np.random.normal(0, noise_scale, size=(flux_array.shape[0], n_pixels, n_mc))
 
-    # Scale array depending on the scale
-    # noise_scale = err_array if np.isscalar(err_array) else err_array[..., None]
-    # noise_scale = err_array
-
-    # Add random noise matrix
-    # noise_array = np.random.normal(0, err_array, size=(n_mc, flux_array.size))
-    # mc_flux = flux_array[:, :, np.newaxis] + noise_array
-
-    if for_loop:
-        mc_flux = flux_array + np.random.normal(0, err_array, size=(n_mc, flux_array.size))
-
-    else:
-        noise_scale = err_array if np.isscalar(err_array) else err_array[..., None]
-        noise_matrix_shape = (flux_array.shape[0], flux_array.shape[1], n_mc)
-
-        noise_array = np.random.normal(0, noise_scale, size=noise_matrix_shape)
-        mc_flux = flux_array[:, :, np.newaxis] + noise_array
+    # Add noise to observation for (intervals, max_box_size + scale_features, monte_carlo_steps array)
+    mc_flux = flux_array[:, :, np.newaxis] + noise_array
 
     return mc_flux
 
 
-def scale_min_max(data, axis=None):
+def scale_min_max_orig(data, axis=None):
 
     data_min_array = data.min(axis=axis, keepdims=True)
     data_max_array = data.max(axis=axis, keepdims=True)
@@ -48,6 +30,18 @@ def scale_min_max(data, axis=None):
 
     return data_norm
 
+
+def scale_min_max(data, box_size, axis=None):
+
+    # Norm the scale features
+    data_min_array = data[:, -box_size:].min(axis=axis, keepdims=True)
+    data_max_array = data[:, -box_size:].max(axis=axis, keepdims=True)
+    data[:, -box_size:] = (data[:, -box_size:] - data_min_array) / (data_max_array - data_min_array)
+
+    # Save the scaling parameters
+    data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
+
+    return
 
 def scale_log(data, log_base, axis=None):
 
@@ -101,6 +95,10 @@ def detection_function(x_ratio):
     # 2.5 + 1/np.square(x_ratio - 0.1) + 0.5 * np.square(x_ratio)
 
     return 0.5 * np.power(x_ratio, 2) - 0.5 * x_ratio + 5
+
+
+def broad_component_function(intensity_ratio):
+    return np.sqrt(1 + np.log(intensity_ratio)/np.log(2))
 
 
 def cosmic_ray_function(x_ratio, res_ratio_check=True):

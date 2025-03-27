@@ -2,5 +2,5 @@
 
 include src/aspect/aspect.toml
 include src/aspect/changelog.txt
-include src/aspect/models/aspect_min-max_mediumbox_v3_model.joblib
-include src/aspect/models/aspect_min-max_mediumbox_v3_model.toml
+include src/aspect/models/aspect_min-max_12_pixels_v6_model.toml
+include src/aspect/models/aspect_min-max_12_pixels_v6_model.joblib

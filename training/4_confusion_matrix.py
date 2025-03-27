@@ -6,25 +6,26 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 # Configuration
-cfg_file = 'medium_box.toml'
+cfg_file = '12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 norm = sample_cfg['meta']['scale']
 output_folder = Path(sample_cfg['meta']['results_folder'])
+
+# Model reference
+label = f'aspect_{norm}_{version}'
+cfg = sample_cfg[f'randomforest_{version}']
+model_address = output_folder/'results'/f'{label}_model.joblib'
 
 # Read the sample files:
 y_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt', dtype=str)
 data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_{version}.txt', delimiter=',')
 
 # Training the sample
-X_train, y_train, X_test, y_test = aspect.trainer.get_training_test_sets(data_matrix, y_arr, 0.1)
-
-# Model reference
-label = f'aspect_{norm}_{version}'
-cfg = sample_cfg[f'randomforest_{version}']
+X_train, y_train, X_test, y_test = aspect.trainer.get_training_test_sets(data_matrix, y_arr, 0.1,
+                                                                         n_pixel_features=sample_cfg[f'properties_{version}']['box_pixels'], n_scale_features=1)
 
 # Load the model
-model_address = output_folder/'results'/f'{label}_model.joblib'
 ml_function = aspect.load_model(model_address)
 y_pred = ml_function.predict(X_test)
 

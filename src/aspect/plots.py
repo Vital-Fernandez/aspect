@@ -97,16 +97,40 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
 def scatter_plot(fig, ax, x_arr, y_arr, labels_arr, feature_list, color_dict, alpha=0.5, idx_target=None,
                  detection_range=None, ratio_color=None):
 
-    for feature in feature_list:
-        idcs_class = labels_arr == feature
-        x_feature = x_arr[idcs_class]
-        y_feature = y_arr[idcs_class]
-        label = f'{feature} ({y_feature.size})'
-        color_points = color_dict[feature] if ratio_color is None else ratio_color
-        scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, alpha=alpha, edgecolor='none')
 
-        # if ratio_color is not None:
-        #     fig.colorbar(scatter, ax=ax)
+    if ratio_color is not None:
+        scatter = ax.scatter(x_arr, y_arr, c=ratio_color, cmap='viridis', alpha=alpha, edgecolor='none',
+                             norm=colors.LogNorm(vmin=ratio_color.min(), vmax=ratio_color.max()))
+        cbar = fig.colorbar(scatter, ax=ax)  # Ensure the colorbar is linked to the figure
+        cbar.set_label('Max - Min')
+
+        # c = ax.scatter(x, y, c=magnitude, cmap='viridis',
+        #                norm=colors.LogNorm(vmin=magnitude.min(), vmax=magnitude.max()), s=50, edgecolor='k')
+
+
+    else:
+
+        for i, feature in enumerate(feature_list):
+            idcs_class = labels_arr == feature
+            x_feature = x_arr[idcs_class]
+            y_feature = y_arr[idcs_class]
+            label = f'{feature} ({y_feature.size})'
+            color_points = color_dict[feature]# if ratio_color is None else ratio_color[idcs_class]
+            scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, alpha=alpha, edgecolor='none')
+
+            # if ratio_color is None:
+            #     scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, alpha=alpha, edgecolor='none')
+            # else:
+            #     scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, cmap='viridis', alpha=alpha,
+            #                          edgecolor='none')
+            #
+            #     # Color bar just one
+            #     if i == 0:
+            #         cbar = fig.colorbar(scatter, ax=ax)  # Ensure the colorbar is linked to the figure
+            #         cbar.set_label('Max - Min')
+
+            # if ratio_color is not None:
+            #     fig.colorbar(scatter, ax=ax)
 
     if idx_target is not None:
         ax.scatter(x_arr[idx_target], y_arr[idx_target], marker='x', label='selection', color='black')
@@ -157,10 +181,36 @@ def ax_wording(ax, ax_cfg=None, legend_cfg=None, yscale=None):
     return
 
 
+def plot_steps(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, old_pred):
+    print(idx)
+    x_arr = spec.wave_rest.data[spec.wave_rest.mask]
+    x_sect = x_arr[idx:idx+y_norm.shape[0]]
+    print(f'Idx "{idx}"; counts: {counts}; Output: {model_mgr.medium.number_feature_dict[out_type]} ({out_type})')
+
+    colors_old = [cfg['colors'][model_mgr.medium.number_feature_dict[val]] for val in old_pred]
+    colors_new = [cfg['colors'][model_mgr.medium.number_feature_dict[val]] for val in seg_pred]
+
+    fig, ax = plt.subplots()
+    color_detection = cfg['colors'][model_mgr.medium.number_feature_dict[out_type]]
+    ax.step(x_sect, y_norm[:,0], where='mid', color=color_detection, label='Out detection')
+    ax.scatter(x_sect, np.zeros(x_sect.size), color=colors_old, label='Old prediction')
+    ax.scatter(x_sect, np.ones(x_sect.size), color=colors_new, label='New prediction')
+    ax.set_xlabel(r'Wavelength $(\AA)$')
+
+    ax_secondary = ax.twinx()  # Creates a twin y-axis on the right
+    ax_secondary.set_ylim(ax.get_ylim())  # Match the primary y-axis limits
+    ax_secondary.set_yticks([0, 0.5, 1])  # Custom tick positions
+    ax_secondary.set_yticklabels(['Previous\nClassification', 'Present\nClassification', 'Output\nClassification'])
+
+    plt.tight_layout()
+    plt.show()
+
+    return
+
 class CheckSample:
 
-    def __init__(self, in_data_arr, in_pred_arr, fig_cfg=None, ax_diag=None, ax_line=None, base=10000, sample_size=None,
-                 categories=None, column_labels='shape_class', dtype='classifier'):
+    def __init__(self, in_data_arr, in_pred_arr, idx_features, fig_cfg=None, ax_diag=None, ax_line=None, base=10000,
+                 sample_size=None, categories=None, column_labels='shape_class', dtype='classifier', ):
 
         # Stratify the selection aiming for same number of points
         data_arr, pred_arr = stratify_sample(in_data_arr, in_pred_arr, sample_size, categories, randomize=True)
@@ -170,11 +220,16 @@ class CheckSample:
         self.y_coords = data_arr[:, 0]
         self.id_arr = pred_arr
         self.classes = np.sort(np.unique(self.id_arr))
-        self.data_df = data_arr[:, 2:]
+        self.data_df = data_arr[:, idx_features:]
         self.wave_range = np.arange(self.data_df.shape[1])
         self.dtype = dtype
         self.y_scale = 'log' if self.dtype == 'classifier' else 'linear'
         self.ratio_color = None
+        # self.ratio_color = (data_arr[:, 3] - data_arr[:, 2])/10000#  - data_arr[:, 2])
+        # self.ratio_color = (data_arr[:, 3])/10000#  - data_arr[:, 2])
+        # self.ratio_color = (data_arr[:, 3]-data_arr[:, 2])/10000#  - data_arr[:, 2])
+
+        # (max_arr - min_arr) / 10000
 
         if self.dtype == 'classifier':
             self.y_coords_log = np.log10(self.y_coords) / np.log10(self.y_base)
