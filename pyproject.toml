@@ -1,8 +1,8 @@
 [project]
 name = "aspect-stable"
-version = "0.3.0"
+version = "0.3.1"
 readme = "README.rst"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
 authors = [{name = "Vital Fernández", email = "vgf@umich.edu"}]
 description = "Automatic SPEctra Components Tagging"
@@ -13,7 +13,7 @@ dependencies = ["numpy~=2.2",
                 "tomli >= 2.0.0 ; python_version < '3.11'"]
 
 classifiers = ["Programming Language :: Python :: 3",
-               "Programming Language :: Python :: 3.11'"]
+               "Programming Language :: Python :: 3.11"]
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
@@ -33,4 +33,4 @@ pythonpath = ["src"]
 mpl-baseline-path = 'tests/baseline'
 mpl-results-path = 'tests/outputs'
 mpl-results-always = false
-#addopts = "--cov-report term --cov-report xml"
+addopts = "-p no:asdf_schema_tester"

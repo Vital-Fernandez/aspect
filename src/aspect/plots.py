@@ -143,8 +143,11 @@ def scatter_plot(fig, ax, x_arr, y_arr, labels_arr, feature_list, color_dict, al
 def parse_fig_cfg(fig_cfg=None, ax_diag=None, ax_line=None, dtype=None):
 
     # Input configuration updates default
+    theme.set_style('dark')
+
     fig_cfg = fig_cfg if fig_cfg is not None else {'axes.labelsize': 10, 'axes.titlesize': 10,
-                                                'figure.figsize': (12, 6), 'hatch.linewidth': 0.3, 'legend.fontsize': 8}
+                                                'figure.figsize': (12, 6), 'hatch.linewidth': 0.3, 'legend.fontsize': 8,
+                                                   }
     fig_cfg = theme.fig_defaults(fig_cfg)
 
     if dtype == 'classifier':

@@ -36,17 +36,57 @@ y_pred = np.vectorize(aspect.cfg['number_shape'].get)(y_pred)
 cm = confusion_matrix(y_test, y_pred, labels=labels)
 cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
+
+
 print(cm)
 print(cm.shape)
-plt.figure(figsize=(7,7))
-# sns.heatmap(cm, annot=True, fmt='d', cbar=False, xticklabels=labels, yticklabels=labels)
-sns.heatmap(cm_normalized, annot=True,  fmt='.0%', cbar=False, xticklabels=labels, yticklabels=labels)
-plt.ylabel('Actual')
-plt.xlabel('Predicted')
-plt.title('Multiclass Confusion Matrix')
-plt.savefig(f'{output_folder}/results/{label}_confusion_matrix.png')
+
+# plt.figure(figsize=(7,7))
+# # sns.heatmap(cm, annot=True, fmt='d', cbar=False, xticklabels=labels, yticklabels=labels)
+# sns.heatmap(cm_normalized, annot=True,  fmt='.0%', cbar=False, xticklabels=labels, yticklabels=labels)
+# plt.ylabel('Actual')
+# plt.xlabel('Predicted')
+# plt.title('Multiclass Confusion Matrix')
+# plt.savefig(f'{output_folder}/results/{label}_confusion_matrix.png')
+# plt.show()
+
+# Create figure and axis
+fig, ax = plt.subplots(figsize=(7, 7), dpi=300)
+
+# Plot heatmap on the axis
+sns.heatmap(cm_normalized, annot=True, fmt='.0%', cbar=False,
+            xticklabels=labels, yticklabels=labels, ax=ax)
+
+# Customize axis labels and title
+ax.set_ylabel('Actual')
+ax.set_xlabel('Predicted')
+ax.set_title('Multiclass Confusion Matrix')
+
+fig.patch.set_facecolor("#2B2B2B")       # Whole figure
+ax.set_facecolor("#2B2B2B")
+ax.tick_params(colors="#CCCCCC")         # Tick labels
+ax.xaxis.label.set_color("#CCCCCC")      # X-axis label
+ax.yaxis.label.set_color("#CCCCCC")      # Y-axis label
+ax.title.set_color("#CCCCCC")            # Title
+
+
+# Save and show
+fig.savefig(f'{output_folder}/results/{label}_confusion_matrix.png', bbox_inches='tight')
 plt.show()
 
+
+# Change background color
+          # Plot area background
+
+# # Change axes colors (ticks, spines, labels)
+# ax.tick_params(colors='white')         # Tick labels
+# ax.xaxis.label.set_color('white')      # X-axis label
+# ax.yaxis.label.set_color('white')      # Y-axis label
+# ax.title.set_color('white')            # Title
+#
+# # Change axis spine colors (borders)
+# for spine in ax.spines.values():
+#     spine.set_color('white')
 
 # # Read the sample files:
 # y_arr = np.loadtxt(output_folder/f'pred_array_doublet.txt', dtype=str)
