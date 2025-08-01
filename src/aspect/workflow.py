@@ -55,7 +55,7 @@ def enbox_spectrum(input_flux, box_size, range_box, n_scale_features):
     n_columns = box_size + n_scale_features
 
     # Number of rows in equal ter
-    n_rows = input_flux.size - box_size # TODO I think this plus one is wrong
+    n_rows = input_flux.size - box_size
 
     # Container for the data
     box_containter = np.empty((n_rows, n_columns))

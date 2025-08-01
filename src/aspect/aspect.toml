@@ -1,6 +1,8 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.5.0'
+version = '0.4.0'
+category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet', 'peak',
+                  'absorption', 'dead-pixel', 'trough']
 
 [shape_number]
 undefined = 0
@@ -8,31 +10,27 @@ white-noise = 1
 continuum = 2
 emission = 3
 cosmic-ray = 4
-pixel-line = 5
-broad = 6
-doublet = 7
-peak = 8
-absorption = 9
-dead-pixel = 10
-trough = 11
-phl293B = 12
-Hbeta_OIII-doublet = 13
-
+broad = 5
+doublet = 6
+peak = 7
+absorption = 8
+dead-pixel = 9
+trough = 10
 
 [colors]
+
 undefined = 'black'
 white-noise = '#C41E3A'         # Red
 continuum = '#F48CBA'           # Pink
 emission = '#00FF98'            # Spring Green
 cosmic-ray= '#FFF468'           # Yellow
-pixel-line = '#0070DD'          # Blue
 broad = '#A330C9'               # Dark magenta
 doublet = '#3FC7EB'             # Light blue
 peak = '#C69B6D'                # Tan
 absorption = '#FF7C0A'          # Orange
 dead-pixel = '#8788EE'          # Purple
-phl293B = "#33937F"             # Dark Emerald
-Hbeta_OIII-doublet = "#33937F"  # Dark Emerald
+trough = "#33937F"             # Dark Emerald
+Hbeta_OIII-doublet = '#0070DD'  # Blue
 
 [decision_matrices]
 
@@ -41,61 +39,55 @@ decision_colors = ['#be6530', '#72a7c2']
 
                     # 0 idx        1 idx
 choice_labels = ['1st option', '2nd option']
-choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
-            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
-            [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0], #continuum
-            [0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #emission
-            [0,  1,  0,  1,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0], #cosmic-ray
-            [0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0], #pixel-line
-            [0,  1,  0,  1,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0], #broad
-            [0,  1,  0,  1,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0], #doublet
-            [0,  1,  0,  1,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0], #peak
-            [0,  1,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0], #absorption
-            [0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  1,  0,  0], #dead-pixel
-            [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  0,  0], #trough
-            [0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  0], #Hbeta_OIII-doublet
-            [0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2]] #phl293B
-#            u   w   c   e   c   p   b   d   p   a   d   t   H   p
-#            n   h   o   m   o   i   r   o   e   b   e   r   b   h
-#            d   i   n   i   s   x   o   u   a   s   a   o   e   l
-#            e   t   t   s   m   e   a   b   k   o   d   u   t   2
-#            f   e   i   s   i   l   d   l       r   -   g   a   9
-#            i   -   n   i   c   -       e       p   p   h   _   3
-#            n   n   u   o   -   l       t       t   i       O   B
-#            e   o   u   n   r   i               i   x       I
-#            d   i   m       a   n               o   e       I
-#                s           y   e               n   l       I
+choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
+            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
+            [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  0], #continuum
+            [0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  0], #emission
+            [0,  1,  0,  1,  2,  0,  0,  0,  0,  0,  0], #cosmic-ray
+            [0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0], #broad
+            [0,  1,  0,  1,  0,  0,  2,  0,  0,  0,  0], #doublet
+            [0,  1,  0,  1,  0,  0,  0,  2,  0,  0,  0], #peak
+            [0,  1,  0,  0,  0,  0,  0,  0,  2,  0,  0], #absorption
+            [0,  1,  1,  1,  1,  1,  1,  1,  1,  2,  1], #dead-pixel
+            [0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  2]] #trough
+#            u   w   c   e   c   b   d   p   a   d   t
+#            n   h   o   m   o   r   o   e   b   e   r
+#            d   i   n   i   s   o   u   a   s   a   o
+#            e   t   t   s   m   a   b   k   o   d   u
+#            f   e   i   s   i   d   l       r   -   g
+#            i   -   n   i   c       e       p   p   h
+#            n   n   u   o   -       t       t   i
+#            e   o   u   n   r               i   x
+#            d   i   m       a               o   e
+#                s           y               n   l
 #                e
 
 time_labels = ['Current detection', 'Past detection']
-time = [[0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
-        [0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #white-noise
-        [0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #emission
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #cosmic-ray
-        [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #pixel-line
-        [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #broad
-        [0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #doublet
-        [0,  0,  0,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0,  0], #peak
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #absorption
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #dead-pixel
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #trough
-        [0,  0,  0,  1,  0,  0,  1,  1,  0,  0,  0,  0,  0,  0], #Hbeta_OIII-doublet
-        [0,  0,  0,  1,  0,  0,  1,  1,  0,  0,  0,  0,  1,  0]] #phl293B
-        #u   w   c   e   c   p   b   d   p   a   d   t   H   p
-        #n   h   o   m   o   i   r   o   e   b   e   r   b   h
-        #d   i   n   i   s   x   o   u   a   s   a   o   e   l
-        #e   t   t   s   m   e   a   b   k   o   d   u   t   2
-        #f   e   i   s   i   l   d   l       r   -   g   a   9
-        #i   -   n   i   c   -       e       p   p   h   _   3
-        #n   n   u   o   -   l       t       t   i       O   B
-        #e   o   u   n   r   i               i   x       I
-        #d   i   m       a   n               o   e       I
-        #    s           y   e               n   l       I
-        #    e                                           -
-        #                                                d
-        #                                                o
-        #                                                u
+time = [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
+        [0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1], #white-noise
+        [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
+        [0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0], #emission
+        [0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0], #cosmic-ray
+        [0,  0,  0,  1,  0,  2,  0,  0,  0,  0,  0], #broad
+        [0,  0,  0,  1,  0,  0,  2,  0,  0,  0,  0], #doublet
+        [0,  0,  0,  1,  1,  1,  1,  2,  0,  0,  0], #peak
+        [0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0], #absorption
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0], #dead-pixel
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2]] #trough
+        #u   w   c   e   c   b   d   p   a   d   t
+        #n   h   o   m   o   r   o   e   b   e   r
+        #d   i   n   i   s   o   u   a   s   a   o
+        #e   t   t   s   m   a   b   k   o   d   u
+        #f   e   i   s   i   d   l       r   -   g
+        #i   -   n   i   c       e       p   p   h
+        #n   n   u   o   -       t       t   i
+        #e   o   u   n   r               i   x
+        #d   i   m       a               o   e
+        #    s           y               n   l
+        #    e
+
+
+
 
 
 #choice =   [[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #undefined
@@ -120,13 +112,3 @@ time = [[0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
 ##            d   i   m       a   n               o   e
 ##                s           y   e               n   l
 ##                e
-
-[plots_format]
-dm."figure.dpi" = 300
-dm."figure.figsize" = [5, 5]
-dm."axes.titlesize" = 9
-dm."axes.labelsize" = 14
-dm."legend.fontsize" = 7
-dm."xtick.labelsize" = 12
-dm."ytick.labelsize" = 12
-dm."font.size" = 5

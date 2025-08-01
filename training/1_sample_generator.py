@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 import aspect
@@ -11,6 +10,7 @@ from tqdm import tqdm
 
 import gc
 
+
 def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box_size):
 
     pixel_int = synth_line[idx_0:idx_f]
@@ -21,6 +21,7 @@ def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box
     y_arr[i_line] = class_name
 
     return i_line + 1
+
 
 # Load sample
 cfg_file = '12_pixels.toml'
@@ -199,36 +200,6 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
 
             # Store the data
             counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-
-    # Doublet
-    if (int_ratio > 100) & (int_ratio < 10000) & (res_ratio > 2 * cosmic_ray_res) & (res_ratio <= 1.5):
-
-        if category_check['Hbeta_OIII-doublet']:
-            shape = 'Hbeta_OIII-doublet'
-
-            res_power_i = np.random.uniform(100, 350)
-            instr_res_i = 4935.461 / res_power_i
-            sigma_i = res_ratio * instr_res_i
-            wave_blended = 4935.461 + step_arr * instr_res_i
-
-            # Flux [OIII]5007A
-            flux_arr = gaussian_model(wave_blended, amp, 5008.240000, sigma_i) + white_noise_arr + cont_arr
-
-            # Flux [OIII]4959A
-            flux_arr += gaussian_model(wave_blended, amp/2.98, 4960.295000, sigma_i)
-
-            # Flux [Hbeta]
-            amp_Hbeta = np.maximum(50, amp/np.random.uniform(2, 8))
-            # amp_Hbeta = amp/2.98
-            flux_arr += gaussian_model(wave_blended, amp_Hbeta, 4862.683000, sigma_i)
-
-            # fig, ax = plt.subplots()
-            # ax.step(wave_blended[idx_0:idx_f], flux_arr[idx_0:idx_f])
-            # plt.show()
-
-            # Store the data
-            counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-
 
 # ---------  Save the results
 idcs_empty = pred_arr != ''

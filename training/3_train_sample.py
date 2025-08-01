@@ -19,3 +19,4 @@ cfg = sample_cfg[f'randomforest_{version}']
 cfg['scale'] = sample_cfg['meta']['scale']
 cfg['box_size'] = sample_cfg[f'properties_{version}']['box_pixels']
 aspect.trainer.components_trainer(label, data_matrix, y_arr, cfg, None, output_folder=output_folder)
+

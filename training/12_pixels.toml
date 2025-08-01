@@ -1,10 +1,10 @@
 [meta]
-version = '12_pixels_v6'
+version = '12_pixels_v7'
 results_folder = '/home/vital/Astrodata/aspect/medium_box'
 scale = 'min-max'
 name = '12_pixels'
 
-[properties_12_pixels_v6]
+[properties_12_pixels_v7]
 
 # Global
 box_pixels = 12
@@ -57,7 +57,7 @@ doublet.'max_separation' = 3
 doublet.'discrepancy_factors' = [0.7, 1.3]
 
 
-[randomforest_12_pixels_v6]
+[randomforest_12_pixels_v7]
 box_size = 12
 sample_size = 300000
 test_sample_size_fraction = 0.1

@@ -3,10 +3,11 @@ from matplotlib import pyplot as plt, gridspec, colors, rc_context
 from .io import Aspect_Error, cfg
 from lime.plotting.plots import theme
 from .tools import detection_function, stratify_sample
+import matplotlib.patheffects as path_effects
 
 
-
-def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclude_diagonal=True, show_categories=False):
+def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclude_diagonal=True, show_categories=False,
+                         cfg_fig=None):
 
     # Try to find from database if None provided
     matrix_name = None
@@ -16,7 +17,17 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
             matrix_arr = np.array(cfg['decision_matrices'][matrix_arr])
         else:
             raise Aspect_Error(f'Decision matrix "{matrix_arr}" not found in configuration file please')
-        categories = list(cfg['shape_number'].keys())
+
+
+    # Default categories from configuration file
+    default_categories = cfg['metadata']['category_order']
+
+    # Trim matrix to the categories requested
+    if categories is not None:
+        indices = [default_categories.index(label) for label in categories]
+        matrix_arr = matrix_arr[np.ix_(indices, indices)]
+    else:
+        categories = default_categories
 
     # Number of categories
     n_categories = matrix_arr.shape[0]
@@ -26,11 +37,11 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
         np.fill_diagonal(matrix_arr, -1)
 
     # Figure format
-    decision_colors = cfg['decision_matrices']['decision_colors']
+    decision_colors = ['#ffe6ccff', '#ffccccff']
     axes_labels = None if matrix_name is None else cfg['decision_matrices'][f'{matrix_name}_labels']
 
     # Start the figure
-    with rc_context(cfg['plots_format']['dm']):
+    with rc_context(cfg_fig):
 
         # Define colors for values
         cmap = colors.ListedColormap(['white', decision_colors[0], decision_colors[1]])
@@ -49,28 +60,29 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
         ax_matrix.set_xticks(range(n_categories))
         ax_matrix.set_yticks(range(n_categories))
 
-        ax_matrix.set_xticklabels(categories, rotation=90)
+        ax_matrix.set_xticklabels(categories, rotation=45)
         ax_matrix.set_yticklabels(categories)
-
-        # # Move x-axis labels to the bottom
-        # ax_matrix.xaxis.set_ticks_position('bottom')
-        # ax_matrix.xaxis.set_label_position('bottom')
 
         # Add black gridlines to separate each square
         ax_matrix.set_xticks(np.arange(-.5, n_categories, 1), minor=True)
         ax_matrix.set_yticks(np.arange(-.5, n_categories, 1), minor=True)
         ax_matrix.grid(which="minor", color="black", linestyle='-', linewidth=2)
         ax_matrix.tick_params(which="minor", size=0)
+        ax_matrix.tick_params(axis='x', bottom=False, labelbottom=False)
 
         if axes_labels is not None:
-            ax_matrix.set_ylabel(axes_labels[0], color=decision_colors[0])
-            ax_matrix.set_xlabel(axes_labels[1], color=decision_colors[1])
+            ax_matrix.set_ylabel(axes_labels[0], color=decision_colors[0], path_effects=[
+                                path_effects.Stroke(linewidth=0.5, foreground='black'), path_effects.Normal()])
+
+            ax_matrix.set_title(axes_labels[1], color=decision_colors[1], path_effects=[
+                                path_effects.Stroke(linewidth=0.5, foreground='black'), path_effects.Normal()])
+
+            # ax_matrix.set_xlabel(axes_labels[1], color=decision_colors[1], path_effects=[
+            #                     path_effects.Stroke(linewidth=0.5, foreground='black'), path_effects.Normal()])
 
         # Add individual plots on the right side (column 1 of the GridSpec) for each category
         if show_categories:
-
             for i, category in enumerate(categories):
-
                 ax_plot = fig.add_subplot(gs[i, 1])
 
                 # Example placeholder data for each category plot
@@ -228,11 +240,6 @@ class CheckSample:
         self.dtype = dtype
         self.y_scale = 'log' if self.dtype == 'classifier' else 'linear'
         self.ratio_color = None
-        # self.ratio_color = (data_arr[:, 3] - data_arr[:, 2])/10000#  - data_arr[:, 2])
-        # self.ratio_color = (data_arr[:, 3])/10000#  - data_arr[:, 2])
-        # self.ratio_color = (data_arr[:, 3]-data_arr[:, 2])/10000#  - data_arr[:, 2])
-
-        # (max_arr - min_arr) / 10000
 
         if self.dtype == 'classifier':
             self.y_coords_log = np.log10(self.y_coords) / np.log10(self.y_base)
