@@ -1,8 +1,8 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.4.1'
-category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet', 'peak',
-                  'absorption', 'dead-pixel', 'trough']
+version = '0.5.0'
+category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
+                  'absorption', 'dead-pixel', 'doublet-abs', 'trough']
 
 [shape_number]
 undefined = 0
@@ -11,81 +11,83 @@ continuum = 2
 emission = 3
 cosmic-ray = 4
 broad = 5
-doublet = 6
+doublet-em = 6
 peak = 7
 absorption = 8
 dead-pixel = 9
-trough = 10
+doublet-abs = 10
+trough = 11
 
 [colors]
-
 undefined = 'black'
 white-noise = '#C41E3A'         # Red
 continuum = '#F48CBA'           # Pink
 emission = '#00FF98'            # Spring Green
 cosmic-ray= '#FFF468'           # Yellow
-broad = '#A330C9'               # Dark magenta
-doublet = '#3FC7EB'             # Light blue
+broad = '#0070DD'         # Blue
+doublet-em = '#3FC7EB'          # Light blue
 peak = '#C69B6D'                # Tan
 absorption = '#FF7C0A'          # Orange
 dead-pixel = '#8788EE'          # Purple
-trough = "#33937F"             # Dark Emerald
-Hbeta_OIII-doublet = '#0070DD'  # Blue
+trough = "#33937F"              # Dark Emerald
+doublet-abs = '#A330C9'         # Dark magenta
 
 [decision_matrices]
 
 #                   Orange      Blue
 decision_colors = ['#be6530', '#72a7c2']
 
-                    # 0 idx        1 idx
+                 # 0 idx row   1 idx column
 choice_labels = ['1st option', '2nd option']
-choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
-            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
-            [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  0], #continuum
-            [0,  1,  0,  2,  0,  0,  0,  0,  0,  0,  0], #emission
-            [0,  1,  0,  1,  2,  0,  0,  0,  0,  0,  0], #cosmic-ray
-            [0,  1,  0,  1,  0,  2,  0,  0,  0,  0,  0], #broad
-            [0,  1,  0,  1,  0,  0,  2,  0,  0,  0,  0], #doublet
-            [0,  1,  0,  1,  0,  0,  0,  2,  0,  0,  0], #peak
-            [0,  1,  0,  0,  0,  0,  0,  0,  2,  0,  0], #absorption
-            [0,  1,  1,  1,  1,  1,  1,  1,  1,  2,  1], #dead-pixel
-            [0,  1,  0,  0,  0,  0,  0,  0,  0,  1,  2]] #trough
-#            u   w   c   e   c   b   d   p   a   d   t
-#            n   h   o   m   o   r   o   e   b   e   r
-#            d   i   n   i   s   o   u   a   s   a   o
-#            e   t   t   s   m   a   b   k   o   d   u
-#            f   e   i   s   i   d   l       r   -   g
-#            i   -   n   i   c       e       p   p   h
-#            n   n   u   o   -       t       t   i
-#            e   o   u   n   r               i   x
-#            d   i   m       a               o   e
-#                s           y               n   l
-#                e
+choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #undefined
+            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0, 0], #white-noise
+            [0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0, 0], #continuum
+            [0,  1,  1,  2,  0,  0,  0,  0,  0,  0,  0, 0], #emission
+            [0,  1,  1,  1,  2,  1,  1,  1,  1,  1,  1, 1], #cosmic-ray
+            [0,  1,  1,  1,  0,  2,  1,  1,  0,  0,  0, 0], #broad
+            [0,  1,  1,  1,  0,  0,  2,  0,  0,  0,  0, 0], #doublet-em
+            [0,  1,  1,  1,  0,  0,  1,  2,  1,  1,  1, 1], #peak
+            [0,  1,  1,  1,  0,  1,  1,  0,  2,  0,  0, 0], #absorption
+            [0,  1,  1,  1,  0,  1,  1,  0,  1,  2,  1, 1], #dead-pixel
+            [0,  1,  1,  1,  0,  1,  1,  0,  1,  0,  2, 0], #doublet-abs
+            [0,  1,  1,  1,  0,  1,  1,  0,  1,  0,  1, 2]] #trough
+#            u   w   c   e   c   b   d   p   a   d   d  t
+#            n   h   o   m   o   r   o   e   b   e   0  r
+#            d   i   n   i   s   o   u   a   s   a   u  o
+#            e   t   t   s   m   a   b   k   o   d   b  u
+#            f   e   i   s   i   d   l       r   -   l  g
+#            i   -   n   i   c       e       p   p   e  j
+#            n   n   u   o   -       t       t   i   t
+#            e   o   u   n   r       -       i   x   -
+#            d   i   m       a       e       o   e   a
+#                s           y       m       n   l   b
+#                e                                   s
 
+                   # 0 idx row       1 idx column
 time_labels = ['Current detection', 'Past detection']
-time = [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
-        [0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1], #white-noise
-        [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
-        [0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0], #emission
-        [0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0], #cosmic-ray
-        [0,  0,  0,  1,  0,  2,  0,  0,  0,  0,  0], #broad
-        [0,  0,  0,  1,  0,  0,  2,  0,  0,  0,  0], #doublet
-        [0,  0,  0,  1,  1,  1,  1,  2,  0,  0,  0], #peak
-        [0,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0], #absorption
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  0], #dead-pixel
-        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2]] #trough
-        #u   w   c   e   c   b   d   p   a   d   t
-        #n   h   o   m   o   r   o   e   b   e   r
-        #d   i   n   i   s   o   u   a   s   a   o
-        #e   t   t   s   m   a   b   k   o   d   u
-        #f   e   i   s   i   d   l       r   -   g
-        #i   -   n   i   c       e       p   p   h
-        #n   n   u   o   -       t       t   i
-        #e   o   u   n   r               i   x
-        #d   i   m       a               o   e
-        #    s           y               n   l
-        #    e
-
+time = [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #undefined
+        [0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #white-noise
+        [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1, 1], #continuum
+        [0,  0,  0,  2,  0,  0,  1,  0,  0,  0,  0, 0], #emission
+        [0,  0,  0,  1,  2,  1,  1,  1,  1,  0,  1, 1], #cosmic-ray
+        [0,  0,  0,  1,  0,  2,  1,  0,  1,  0,  0, 0], #broad
+        [0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0, 0], #doublet_em
+        [0,  0,  0,  1,  0,  1,  1,  2,  1,  0,  0, 1], #peak
+        [0,  0,  0,  1,  0,  0,  1,  0,  2,  0,  0, 0], #absorption
+        [0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  0, 1], #dead-pixel
+        [0,  0,  0,  1,  0,  1,  1,  1,  1,  1,  2, 0], #doublet_abs
+        [0,  0,  0,  1,  0,  1,  1,  0,  1,  0,  1, 2]] #trough
+#        u   w   c   e   c   b   d   p   a   d   d  t
+#        n   h   o   m   o   r   o   e   b   e   0  r
+#        d   i   n   i   s   o   u   a   s   a   u  o
+#        e   t   t   s   m   a   b   k   o   d   b  u
+#        f   e   i   s   i   d   l       r   -   l  g
+#        i   -   n   i   c       e       p   p   e  j
+#        n   n   u   o   -       t       t   i   t
+#        e   o   u   n   r       -       i   x   -
+#        d   i   m       a       e       o   e   a
+#            s           y       m       n   l   b
+#            e                                   s
 
 
 

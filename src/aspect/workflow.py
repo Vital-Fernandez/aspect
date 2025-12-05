@@ -1,7 +1,8 @@
 import numpy as np
-from .io import read_trained_model, DEFAULT_MODEL_ADDRESS, cfg, Aspect_Error
-from .tools import monte_carlo_expansion, white_noise_scale, scale_min_max
-from matplotlib import pyplot as plt
+from aspect.io import read_trained_model, DEFAULT_MODEL_ADDRESS, cfg, Aspect_Error
+from aspect.tools import monte_carlo_expansion, white_noise_scale, scale_min_max
+from aspect.plots import plot_comps_detect
+# from matplotlib import pyplot as plt
 from pathlib import Path
 
 CHOICE_DM = np.array(cfg['decision_matrices']['choice'])
@@ -68,13 +69,12 @@ def enbox_spectrum(input_flux, box_size, range_box, n_scale_features):
 
 def detection_spectrum_prechecks(y_arr, box_size, idcs_data):
 
-    valid = True
-
     # Box bigger than spectrum or all entries are masked
     if (y_arr.size < box_size) or (idcs_data.sum() < box_size):
-        valid = False
+        return False
 
-    return valid
+    else:
+        return True
 
 
 def detection_evaluation(counts_categories, idcs_categories):
@@ -111,6 +111,8 @@ def detection_revision(seg_pred, box_size, new_type, new_confidence):
     return idcs_pred, new_pred, new_conf
 
 
+
+
 class DetectionModel:
 
     def __init__(self, model_address=None, n_jobs=None, verbose=0):
@@ -123,6 +125,7 @@ class DetectionModel:
         self.predictor.verbose = verbose
 
         # Array with the boxes size
+        self.scale = self.cfg['properties']['scale']
         self.b_pixels = self.cfg['properties']['box_size']
         self.pixels_range = np.arange(self.b_pixels)
 
@@ -132,6 +135,7 @@ class DetectionModel:
         self.n_categories = len(self.feature_number_dict)
 
         return
+
 
 class ModelManager:
 
@@ -173,19 +177,19 @@ class ModelManager:
 
         return y_pred
 
-    def review_prediction(self, y_pred, model, exclude_continuum):
+    def review_prediction(self, x_arr, y_arr, pred_matrix, model, exclude_continuum, plot_steps=True):
 
-        count_categories = np.apply_along_axis(np.bincount, axis=1, arr=y_pred, minlength=self.medium.n_categories)
+        count_categories = np.apply_along_axis(np.bincount, axis=1, arr=pred_matrix, minlength=self.medium.n_categories)
 
         # Exclude white-noise regions from review:
         if exclude_continuum:
             idcs_detection = np.flatnonzero(count_categories[:, 1] < self.white_noise_maximum)
         else:
-            idcs_detection = np.arange(y_pred.shape[0])
+            idcs_detection = np.arange(pred_matrix.shape[0])
 
         # Containers for total
-        pred_arr = np.zeros(y_pred.shape[0] + model.b_pixels)
-        conf_arr = np.zeros(y_pred.shape[0] + model.b_pixels)
+        pred_arr = np.zeros(pred_matrix.shape[0] + model.b_pixels)
+        conf_arr = np.zeros(pred_matrix.shape[0] + model.b_pixels)
 
         self.seg_pred = np.zeros(self.medium.b_pixels, dtype=np.int64)
         self.seg_conf = np.zeros(self.medium.b_pixels, dtype=np.int64)
@@ -200,15 +204,16 @@ class ModelManager:
             counts = count_categories[idx, :]
             idcs_categories = counts > self.detection_min
 
-            # Choose detection
+            # Choice selection
             out_type, out_confidence = detection_evaluation(counts, idcs_categories)
 
-            # Check with previous detection
+            # Time detection
             idcs_pred, new_pred, new_conf = detection_revision(self.seg_pred, self.medium.b_pixels, out_type,
                                                                out_confidence)
 
             # Only pass if more than half
-            half_check = idcs_pred[6:].sum() > 5
+            # half_check = idcs_pred[6:].sum() > 5
+            half_check = idcs_pred[5:].sum() > 6
             if half_check:
                 idcs_pred = np.flatnonzero(idcs_pred)
                 self.seg_pred[idcs_pred] = new_pred[idcs_pred]
@@ -217,69 +222,25 @@ class ModelManager:
                 self.seg_pred[:] = pred_arr[idx:idx + self.medium.b_pixels]
                 self.seg_conf[:] = conf_arr[idx:idx + self.medium.b_pixels]
 
+            if plot_steps:
+                plot_comps_detect(x_arr[idx:idx + self.medium.b_pixels],
+                                  y_arr[idx, -self.medium.b_pixels:, 0],
+                                  idx, counts, self.medium,
+                                  new_pred[0],
+                                  pred_arr[idx:idx + self.medium.b_pixels],
+                                  self.seg_pred[:])
+
             # Assign new categories and confidence
             pred_arr[idx:idx + self.medium.b_pixels] = self.seg_pred[:]
             conf_arr[idx:idx + self.medium.b_pixels] = self.seg_conf[:]
 
         return pred_arr, conf_arr
 
-    def review_prediction_backUp(self, y_pred, idcs_data, exclude_continuum, pred_arr, conf_arr, y_arr, y_norm, show_steps=False,
-                          spec=None):
-
-        count_categories = np.apply_along_axis(np.bincount, axis=1, arr=y_pred, minlength=self.medium.n_categories)
-
-        # Exclude white-noise regions from review:
-        if exclude_continuum:
-            idcs_detection = np.flatnonzero(count_categories[:, 1] < self.white_noise_maximum)
-        else:
-            idcs_detection = np.arange(y_arr.size - self.medium.b_pixels)
-
-        self.seg_pred = np.zeros(self.medium.b_pixels, dtype=np.int64)
-        self.seg_conf = np.zeros(self.medium.b_pixels, dtype=np.int64)
-
-        for idx in idcs_detection:
-
-            # Get segment arrays
-            self.seg_pred[:] = pred_arr[idcs_data][idx:idx + self.medium.b_pixels]
-            self.seg_conf[:] = conf_arr[idcs_data][idx:idx + self.medium.b_pixels]
-
-            # Count
-            counts = count_categories[idx, :]
-            idcs_categories = counts > self.detection_min
-
-            # Choose detection
-            out_type, out_confidence = detection_evaluation(counts, idcs_categories)
-
-            # Check with previous detection
-            idcs_pred, new_pred, new_conf = detection_revision(self.seg_pred, self.medium.b_pixels, out_type,
-                                                               out_confidence)
-
-            # Only pass if more than half
-            half_check = idcs_pred[6:].sum() > 5
-            if half_check:
-                idcs_pred = np.flatnonzero(idcs_pred)
-                self.seg_pred[idcs_pred] = new_pred[idcs_pred]
-                self.seg_conf[idcs_pred] = new_conf[idcs_pred]
-            else:
-                self.seg_pred[:] = pred_arr[idcs_data][idx:idx + self.medium.b_pixels]
-                self.seg_conf[:] = conf_arr[idcs_data][idx:idx + self.medium.b_pixels]
-
-            # if show_steps:
-            #     plot_steps(spec, y_norm[idx, 1:], idx, counts, self, out_type, self.seg_pred,
-            #                pred_arr[idcs_data][idx:idx + self.medium.b_pixels])
-                # self.plot_steps(y_norm[idx, :], idx, counts, idcs_categories, out_type, out_confidence,
-                #                 pred_arr[idcs_data][idx:idx + self.medium.b_pixels],
-                #                 conf_arr[idcs_data][idx:idx + self.medium.b_pixels],
-                #                 idcs_pred, new_pred, new_conf)
-
-            # Assign new categories and confidence
-            pred_arr[idcs_data[idx:idx + self.medium.b_pixels]] = self.seg_pred[:]
-            conf_arr[idcs_data[idx:idx + self.medium.b_pixels]] = self.seg_conf[:]
-
-        return
 
 # Create object with default model
 model_mgr = ModelManager()
+
+
 
 
 class ComponentsDetector:
@@ -301,7 +262,7 @@ class ComponentsDetector:
 
         return
 
-    def components(self, exclude_continuum=True, show_steps=False, rest_wl_lim=None):
+    def components(self, exclude_continuum=True, plot_steps=False, rest_wl_lim=None, theme=None):
 
         # Remove masks from flux and uncertainty
         x_arr, y_arr, err_arr, idcs_data = unpack_spec_flux(self._spec, rest_wl_lim)
@@ -311,18 +272,19 @@ class ComponentsDetector:
 
             # Reshape the data to the box size and add Monte-carlo uncertainty axis
             y_medium = self.cube_data(y_arr, err_arr, self.model_mgr.medium, self.model_mgr.n_scale_features)
-            # y_large = self.cube_data(y_arr, err_arr, self.model_mgr.large, self.model_mgr.n_scale_features)
 
             # Scale and run the prediction models
             pred_medium = self.run(y_medium, self.model_mgr.medium)
-            # pred_large =  self.run(y_large, self.model_mgr.large)
 
             # Review the predictions and assign confidence values
             self.pred_arr = np.zeros(self._spec.flux.size, dtype=np.int64)
             self.conf_arr = np.zeros(self._spec.flux.size, dtype=np.int64)
-            self.pred_arr[idcs_data], self.conf_arr[idcs_data] = self.model_mgr.review_prediction(pred_medium,
+            self.pred_arr[idcs_data], self.conf_arr[idcs_data] = self.model_mgr.review_prediction(x_arr,
+                                                                                                  y_medium,
+                                                                                                  pred_medium,
                                                                                                   self.model_mgr.medium,
-                                                                                                  exclude_continuum)
+                                                                                                  exclude_continuum,
+                                                                                                  plot_steps)
 
         return
 
@@ -340,7 +302,7 @@ class ComponentsDetector:
     def run(self, data_arr, model):
 
         # Scale the data
-        scale_min_max(data_arr, model.b_pixels, axis=1)
+        scale_min_max(data_arr, model.b_pixels, axis=1, scale_parameter=model.scale)
 
         # Run the prediction
         y_pred = data_arr.transpose(0, 2, 1).reshape(-1, model.b_pixels + 1)

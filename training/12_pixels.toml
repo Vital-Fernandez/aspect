@@ -1,16 +1,16 @@
 [meta]
-version = '12_pixels_v7'
+version = '12_pixels_v10'
 results_folder = '/home/vital/Astrodata/aspect/medium_box'
-scale = 'min-max'
+scale = 'min-max-log'
 name = '12_pixels'
 
-[properties_12_pixels_v7]
+[properties_12_pixels_v10]
 
 # Global
 box_pixels = 12
 n_sigma = 6
 err_n_sigma = 4
-categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet', 'dead-pixel', 'absorption']
+categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet-em', 'dead-pixel', 'absorption', 'doublet-abs']
 
 # Resolution ratio (line sigma / instrument resolution) parameters
 res_ratio_min = 0.1
@@ -25,8 +25,18 @@ noise_cont = 1
 # Sample size
 int_ratio_points = 5000 #5000
 res_ratio_points = 1000 #1000
+#Input sample has 9329554 entries:
+#- absorption: 1438819
+#- continuum: 1281052
+#- cosmic-ray: 916449
+#- dead-pixel: 916449
+#- doublet-abs: 733950
+#- doublet-em: 629370
+#- emission: 2433465
+#- white-noise: 980000
+#Cropping to 629370 entries per category
 
-cosmic_ray_boundary = 100
+#cosmic_ray_boundary = 100
 
 # Continuum configuration
 noise_loc = 0
@@ -41,28 +51,41 @@ mu_line = 0
 uncrop_array_size = 400
 
 # Cosmic ray
-cosmic-ray.'cosmic_ray_boundary' = 100
+#cosmic-ray.'cosmic_ray_boundary' = 100
+cosmic-ray.'cosmic_ray_low_boundary' = 2
+
+# absorption
+absorption.max_int_ratio = 500
 
 # White noise
 white_noise.'min_int_ratio' = 0.01
-white_noise.'max_int_ratio' = 0.3
+white_noise.'max_int_ratio' = 0.15
 
-# Doublet
-doublet.'min_res_ratio' = 1
-doublet.'max_res_ratio' = 1.6
-doublet.'min_int_ratio' = 20
-doublet.'max_int_ratio' = 1000
-doublet.'min_separation' = 1.2
-doublet.'max_separation' = 3
-doublet.'discrepancy_factors' = [0.7, 1.3]
+# Doublet-em
+doublet_em.'min_res_ratio' = 1
+doublet_em.'max_res_ratio' = 1.6
+doublet_em.'min_int_ratio' = 20
+doublet_em.'max_int_ratio' = 5000
+doublet_em.'min_separation' = 1.2
+doublet_em.'max_separation' = 3
+doublet_em.'discrepancy_factors' = [0.7, 1.3]
 
+# Doublet-em
+doublet_abs.'min_res_ratio' = 1
+doublet_abs.'max_res_ratio' = 1.6
+doublet_abs.'min_int_ratio' = 20
+doublet_abs.'max_int_ratio' = 500
+doublet_abs.'min_separation' = 1.2
+doublet_abs.'max_separation' = 3
+doublet_abs.'discrepancy_factors' = [0.7, 1.3]
 
-[randomforest_12_pixels_v7]
+[randomforest_12_pixels_v10]
 box_size = 12
-sample_size = 300000
+sample_size = 600000
+#sample_size = 180000
 test_sample_size_fraction = 0.1
 
-categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet', 'dead-pixel', 'absorption']
+categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet-em', 'dead-pixel', 'absorption', 'doublet-abs']
 estimator."module" = "sklearn.ensemble"
 estimator."class" = "RandomForestClassifier"
 estimator_params."random_state" = 42
@@ -70,6 +93,6 @@ estimator_params."n_estimators" = 60
 estimator_params."max_depth" = 8
 estimator_params."max_features" = 'sqrt'
 estimator_params."verbose" = 0
-estimator_params."n_jobs" = 15
+estimator_params."n_jobs" = 10
 estimator_params."min_samples_split" = 2000
 estimator_params."min_samples_leaf" = 2000

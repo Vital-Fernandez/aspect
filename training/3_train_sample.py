@@ -1,5 +1,5 @@
-import numpy as np
 import aspect
+import numpy as np
 from pathlib import Path
 
 # Configuration

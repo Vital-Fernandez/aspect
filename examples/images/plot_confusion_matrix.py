@@ -66,5 +66,5 @@ with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
     # ax.title.set_color("#CCCCCC")            # Title
 
     # Save and show
-    fig.savefig(f'{fig_folder}/aspect_confusion_matrix.png', bbox_inches='tight')
+    fig.savefig(f'{fig_folder}/aspect_confusion_matrix_{version}_{norm}.png', bbox_inches='tight')
     # plt.show()

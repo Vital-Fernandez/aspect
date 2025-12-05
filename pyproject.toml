@@ -1,10 +1,10 @@
 [project]
 name = "aspect-stable"
-version = "0.4.1"
+version = "0.5.0"
 readme = "README.rst"
 requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
-authors = [{name = "Vital Fernández", email = "vgf@umich.edu"}]
+authors = [{name = "Vital Fernández", email = "vgf@stsci.edu"}]
 description = "Automatic SPEctra Components Tagging"
 dependencies = ["numpy~=2.3",
                 "joblib~=1.5",

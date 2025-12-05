@@ -1,9 +1,13 @@
+import logging
+
 import numpy as np
 from matplotlib import pyplot as plt, gridspec, colors, rc_context
 from .io import Aspect_Error, cfg
 from lime.plotting.plots import theme
 from .tools import detection_function, stratify_sample
 import matplotlib.patheffects as path_effects
+
+_logger = logging.getLogger("aspect")
 
 
 def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclude_diagonal=True, show_categories=False,
@@ -105,45 +109,29 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
 
     return
 
-
 def scatter_plot(fig, ax, x_arr, y_arr, labels_arr, feature_list, color_dict, alpha=0.5, idx_target=None,
                  detection_range=None, ratio_color=None):
 
-
+    # Input user diagnostic coloring
     if ratio_color is not None:
-        scatter = ax.scatter(x_arr, y_arr, c=ratio_color, cmap='viridis', alpha=alpha, edgecolor='none',
-                             norm=colors.LogNorm(vmin=ratio_color.min(), vmax=ratio_color.max()))
-        cbar = fig.colorbar(scatter, ax=ax)  # Ensure the colorbar is linked to the figure
+        idcs_data = np.where(np.isin(labels_arr, feature_list))[0]
+        color_arr = ratio_color[idcs_data] # ratio_color[idcs_data]
+        scatter = ax.scatter(x_arr[idcs_data], y_arr[idcs_data], c=color_arr, cmap='viridis', alpha=alpha, edgecolor='none')
+                             # norm=colors.LogNorm(vmin=1, vmax=np.nanmax(color_arr)))
+        cbar = fig.colorbar(scatter, ax=ax)
         cbar.set_label('Max - Min')
 
-        # c = ax.scatter(x, y, c=magnitude, cmap='viridis',
-        #                norm=colors.LogNorm(vmin=magnitude.min(), vmax=magnitude.max()), s=50, edgecolor='k')
-
-
+    # Category coloring
     else:
-
         for i, feature in enumerate(feature_list):
             idcs_class = labels_arr == feature
             x_feature = x_arr[idcs_class]
             y_feature = y_arr[idcs_class]
             label = f'{feature} ({y_feature.size})'
-            color_points = color_dict[feature]# if ratio_color is None else ratio_color[idcs_class]
-            scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, alpha=alpha, edgecolor='none')
+            color_points = color_dict[feature]
+            ax.scatter(x_feature, y_feature, label=label, c=color_points, alpha=alpha, edgecolor='none')
 
-            # if ratio_color is None:
-            #     scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, alpha=alpha, edgecolor='none')
-            # else:
-            #     scatter = ax.scatter(x_feature, y_feature, label=label, c=color_points, cmap='viridis', alpha=alpha,
-            #                          edgecolor='none')
-            #
-            #     # Color bar just one
-            #     if i == 0:
-            #         cbar = fig.colorbar(scatter, ax=ax)  # Ensure the colorbar is linked to the figure
-            #         cbar.set_label('Max - Min')
-
-            # if ratio_color is not None:
-            #     fig.colorbar(scatter, ax=ax)
-
+    # Failed entries
     if idx_target is not None:
         ax.scatter(x_arr[idx_target], y_arr[idx_target], marker='x', label='selection', color='black')
 
@@ -183,6 +171,64 @@ def parse_fig_cfg(fig_cfg=None, ax_diag=None, ax_line=None, dtype=None):
     return {'fig': fig_cfg, 'ax1': ax_diag, 'ax2': ax_line}
 
 
+def maximize_center_fig(maximize_check=False, center_check=False):
+
+    if maximize_check:
+
+        # Windows maximize
+        mng = plt.get_current_fig_manager()
+
+        try:
+            mng.window.showMaximized()
+        except:
+            try:
+                mng.resize(*mng.window.maxsize())
+            except:
+                _logger.debug(f'Unable to maximize the window')
+
+    if center_check:
+
+        try:
+            mngr = plt.get_current_fig_manager()
+            mngr.window.setGeometry(1100, 300, mngr.canvas.width(), mngr.canvas.height())
+        except:
+            _logger.debug(f'Unable to center plot window')
+
+    return
+
+
+def save_close_fig_swicth(file_path=None, bbox_inches=None, fig_obj=None, maximise=False, plot_check=True):
+
+    # By default, plot on screen unless an output address is provided
+    if plot_check:
+        output_fig = None
+
+        if file_path is None:
+
+            # Tight layout
+            if bbox_inches is not None:
+                plt.tight_layout()
+
+            # Window positioning and size
+            maximize_center_fig(maximise)
+
+            # Display
+            plt.show()
+
+        else:
+            plt.savefig(file_path, bbox_inches=bbox_inches)
+
+            # Close the figure in the case of printing
+            if fig_obj is not None:
+                plt.close(fig_obj)
+
+    # Return the figure for output plotting
+    else:
+        output_fig = fig_obj
+
+    return output_fig
+
+
 def ax_wording(ax, ax_cfg=None, legend_cfg=None, yscale=None):
 
     ax.update(ax_cfg)
@@ -196,7 +242,32 @@ def ax_wording(ax, ax_cfg=None, legend_cfg=None, yscale=None):
     return
 
 
-def plot_steps(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, old_pred):
+def plot_comps_detect(x_sect, y_norm, idx, counts, model, out_type, seg_pred, old_pred):
+
+    print(f'Idx "{idx}"; counts: {counts}; Output: {model.number_feature_dict[out_type]} ({out_type})')
+
+    colors_old = [cfg['colors'][model.number_feature_dict[val]] for val in old_pred]
+    colors_new = [cfg['colors'][model.number_feature_dict[val]] for val in seg_pred]
+    color_detection = cfg['colors'][model.number_feature_dict[out_type]]
+
+    fig, ax = plt.subplots()
+    ax.step(x_sect, y_norm, where='mid', color=color_detection, label='Out detection')
+    ax.scatter(x_sect, np.zeros(x_sect.size), color=colors_old, label='Old prediction')
+    ax.scatter(x_sect, np.ones(x_sect.size), color=colors_new, label='New prediction')
+    ax.set_xlabel(r'Wavelength $(\AA)$')
+
+    ax_secondary = ax.twinx()  # Creates a twin y-axis on the right
+    ax_secondary.set_ylim(ax.get_ylim())  # Match the primary y-axis limits
+    ax_secondary.set_yticks([0, 0.5, 1])  # Custom tick positions
+    ax_secondary.set_yticklabels(['Previous\nClassification', 'Present\nClassification', 'Output\nClassification'])
+
+    plt.tight_layout()
+    plt.show()
+
+    return
+
+def plot_steps_backUP(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, old_pred):
+
     print(idx)
     x_arr = spec.wave_rest.data[spec.wave_rest.mask]
     x_sect = x_arr[idx:idx+y_norm.shape[0]]
@@ -204,6 +275,7 @@ def plot_steps(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, old_pre
 
     colors_old = [cfg['colors'][model_mgr.medium.number_feature_dict[val]] for val in old_pred]
     colors_new = [cfg['colors'][model_mgr.medium.number_feature_dict[val]] for val in seg_pred]
+    color_detection = cfg['colors'][model_mgr.medium.number_feature_dict[out_type]]
 
     fig, ax = plt.subplots()
     color_detection = cfg['colors'][model_mgr.medium.number_feature_dict[out_type]]
@@ -222,40 +294,92 @@ def plot_steps(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, old_pre
 
     return
 
+def plot_comps_detect_new(spec, theme, idx, y_norm, counts, model_mgr, out_type, old_pred, seg_pred, **kwargs):
+
+    # Clear previous figure
+    spec.plot.reset_figure()
+
+    # Prepare the data
+    x_arr = spec.wave_rest.data[spec.wave_rest.mask]
+    x_sect = x_arr[idx:idx+y_norm.shape[0]]
+    print(f'Idx "{idx}"; counts: {counts}; Output: {model_mgr.medium.number_feature_dict[out_type]} ({out_type})')
+    colors_old = [cfg['colors'][model_mgr.medium.number_feature_dict[val]] for val in old_pred]
+    colors_new = [cfg['colors'][model_mgr.medium.number_feature_dict[val]] for val in seg_pred]
+    color_detection = cfg['colors'][model_mgr.medium.number_feature_dict[out_type]]
+
+    # Display check for input figures
+    display_check = False if kwargs.get('in_fig') is not None else True
+
+    # Adjust the default theme
+    plt_cfg = theme.fig_defaults(kwargs.get('in_fig'))
+    ax_labels_cfg = theme.ax_defaults(kwargs.get('ax_cfg'), spec)
+
+    # Create and fill the figure
+    with (rc_context(plt_cfg)):
+
+        # Establish figure
+        spec.fig = plt.figure() if kwargs.get('in_fig') is None else kwargs.get('in_fig')
+
+        # Establish the axes
+        spec.ax_list = spec.fig.add_subplot()
+
+        spec.ax_list.step(x_sect, y_norm[:, 0], where='mid', color=color_detection, label='Out detection')
+        spec.ax_list.scatter(x_sect, np.zeros(x_sect.size), color=colors_old, label='Old prediction')
+        spec.ax_list.scatter(x_sect, np.ones(x_sect.size), color=colors_new, label='New prediction')
+
+        # Plot the spectrum
+        label = kwargs.get('label')
+        spec.ax_list.step(spec.wave, spec.flux, label=label, where='mid', color=theme.colors['fg'],
+                          linewidth=theme.plt['spectrum_width'])
+
+        ax_secondary = spec.ax_list.twinx()  # Creates a twin y-axis on the right
+        ax_secondary.set_ylim(spec.ax_list.get_ylim())  # Match the primary y-axis limits
+        ax_secondary.set_yticks([0, 0.5, 1])  # Custom tick positions
+        ax_secondary.set_yticklabels(['Previous\nClassification', 'Present\nClassification', 'Output\nClassification'])
+
+        # Switch y_axis to logarithmic scale if requested
+        if kwargs.get('log_scale'):
+            spec.ax_list.set_yscale('log')
+
+        # Show the wording:
+        spec.ax_list.legend()
+        spec.ax_list.set(**ax_labels_cfg)
+
+        # By default, plot on screen unless an output address is provided
+        maximize = False if kwargs.get('output_address') is None else kwargs.get('output_address')
+        save_close_fig_swicth(kwargs.get('output_address'), 'tight', spec.fig, maximize, display_check)
+
+    return
+
 class CheckSample:
 
     def __init__(self, in_data_arr, in_pred_arr, idx_features, fig_cfg=None, ax_diag=None, ax_line=None, base=10000,
-                 sample_size=None, categories=None, column_labels='shape_class', dtype='classifier', ):
+                 sample_size=None, categories=None, y_axis_scale='log', color_array=None):
 
         # Stratify the selection aiming for same number of points
-        data_arr, pred_arr = stratify_sample(in_data_arr, in_pred_arr, sample_size, categories, randomize=True)
+        data_arr, pred_arr, color_array = stratify_sample(in_data_arr, in_pred_arr, sample_size, categories, randomize=True, color_array=color_array)
 
         self.y_base = base
         self.x_coords = data_arr[:, 1]
         self.y_coords = data_arr[:, 0]
+
         self.id_arr = pred_arr
         self.classes = np.sort(np.unique(self.id_arr))
+
         self.data_df = data_arr[:, idx_features:]
         self.wave_range = np.arange(self.data_df.shape[1])
-        self.dtype = dtype
-        self.y_scale = 'log' if self.dtype == 'classifier' else 'linear'
-        self.ratio_color = None
 
-        if self.dtype == 'classifier':
-            self.y_coords_log = np.log10(self.y_coords) / np.log10(self.y_base)
-        else:
-            self.y_coords_log = self.y_coords
-
-        if self.dtype == 'doublet':
-            self.ratio_color = self.y_coords/self.x_coords
+        self.color_array = color_array
+        self.y_scale = 'log' if y_axis_scale == 'log' else 'linear'
+        self.y_coords_log = np.log10(self.y_coords) / np.log10(self.y_base)
 
         self.idx_current = None
         self.color_dict = cfg['colors']
 
-        self.fig_format = parse_fig_cfg(fig_cfg, ax_diag, ax_line, self.dtype)
+        self.fig_format = parse_fig_cfg(fig_cfg, ax_diag, ax_line, dtype='classifier')
         self._fig, self._ax1, self._ax2 = None, None, None
 
-        self.detection_range = np.linspace(data_arr[:,1].min(), data_arr[:,1].max(), 50) if self.dtype == 'classifier' else None
+        self.detection_range = np.linspace(data_arr[:,1].min(), data_arr[:,1].max(), 50) if self.y_scale == 'log' else None
 
         return
 
@@ -269,7 +393,8 @@ class CheckSample:
 
             # Diagnostic plot
             scatter_plot(self._fig, self._ax1, self.x_coords, self.y_coords, self.id_arr, self.classes, self.color_dict,
-                         idx_target=self.idx_current, detection_range=self.detection_range, ratio_color=self.ratio_color)
+                         idx_target=self.idx_current, detection_range=self.detection_range, ratio_color=self.color_array)
+
             ax_wording(self._ax1, self.fig_format['ax1'], legend_cfg={'loc': 'lower center', 'ncol':2, 'framealpha':0.95},
                        yscale=self.y_scale)
 
@@ -303,7 +428,7 @@ class CheckSample:
             # Replot the figures
             self._ax1.clear()
             scatter_plot(self._fig, self._ax1, self.x_coords, self.y_coords, self.id_arr, self.classes, self.color_dict,
-                         idx_target=self.idx_current, detection_range=self.detection_range, ratio_color=self.ratio_color)
+                         idx_target=self.idx_current, detection_range=self.detection_range, ratio_color=self.color_array)
             ax_wording(self._ax1, self.fig_format['ax1'], legend_cfg={'loc': 'lower center', 'ncol':2, 'framealpha':0.95},
                        yscale=self.y_scale)
 

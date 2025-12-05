@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 from .io import Aspect_Error
+from lime.fitting.lines import gaussian_model
 
 # Log variable
 _logger = logging.getLogger('aspect')
@@ -31,7 +32,7 @@ def scale_min_max_orig(data, axis=None):
     return data_norm
 
 
-def scale_min_max(data, box_size, axis=None):
+def scale_min_max(data, box_size, axis=None, scale_parameter='min-max'):
 
     # Norm the scale features
     data_min_array = data[:, -box_size:].min(axis=axis, keepdims=True)
@@ -39,7 +40,20 @@ def scale_min_max(data, box_size, axis=None):
     data[:, -box_size:] = (data[:, -box_size:] - data_min_array) / (data_max_array - data_min_array)
 
     # Save the scaling parameters
-    data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
+    if scale_parameter == 'min-max':
+        data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
+
+    if scale_parameter == 'min-max-log':
+        data[:, -box_size - 1] = (np.log10(data_max_array - data_min_array)/4)[:,0]
+
+    # # Norm the scale features
+    # data_min_array = data[:, -box_size:].min(axis=axis, keepdims=True)
+    # data_max_array = data[:, -box_size:].max(axis=axis, keepdims=True)
+    # data[:, -box_size:] = (data[:, -box_size:] - data_min_array) / (data_max_array - data_min_array)
+    #
+    # # Save the scaling parameters
+    # data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
+    # data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
 
     return
 
@@ -90,16 +104,37 @@ def white_noise_scale(flux_arr):
 
 
 def detection_function(x_ratio):
-
-    # Original
-    # 2.5 + 1/np.square(x_ratio - 0.1) + 0.5 * np.square(x_ratio)
-
     return 0.5 * np.power(x_ratio, 2) - 0.5 * x_ratio + 5
 
 
 def broad_component_function(intensity_ratio):
     return np.sqrt(1 + np.log(intensity_ratio)/np.log(2))
 
+
+def doublet_model(wave_arr, noise_arr, cont_arr, amp, mu_line, sigma, doublet_em_sep_min, doublet_em_sep_max,
+                  doublet_int_min, doublet_int_max, lower_limit, upper_limit):
+
+    # Compute the doublet
+    sep = np.random.uniform(doublet_em_sep_min, doublet_em_sep_max)
+    int_diff = np.random.uniform(doublet_int_min, doublet_int_max)
+    amp1, amp2 = amp, amp * int_diff
+    mu1, mu2 = mu_line - sep, mu_line + sep
+    sigma1, sigma2 = sigma, sigma * 1
+
+    # Emission doublet
+    if amp > 0:
+        amp2 = np.clip(lower_limit, np.abs(amp2), upper_limit)
+
+    # Absorption doublet
+    else:
+        amp2 = np.clip(-upper_limit, amp2, -lower_limit)
+
+    # Generate the profiles
+    gauss1 = gaussian_model(wave_arr, amp1, mu1, sigma1)
+    gauss2 = gaussian_model(wave_arr, amp2, mu2, sigma2)
+    flux_arr = gauss1 + gauss2 + noise_arr + cont_arr
+
+    return flux_arr
 
 def cosmic_ray_function(x_ratio, res_ratio_check=True):
 
@@ -114,7 +149,7 @@ def cosmic_ray_function(x_ratio, res_ratio_check=True):
     return output
 
 
-def stratify_sample(x_arr, y_arr, n_samples=None, categories=None, randomize=True):
+def stratify_sample(x_arr, y_arr, n_samples=None, categories=None, randomize=True, color_array=None):
 
     # Inspect input sample
     unique_categories, counts = np.unique(y_arr, return_counts=True)
@@ -147,5 +182,7 @@ def stratify_sample(x_arr, y_arr, n_samples=None, categories=None, randomize=Tru
     if randomize:
         np.random.shuffle(selection_mask)
 
-    return x_arr[selection_mask, :], y_arr[selection_mask]
+    ratio_indexed = None if color_array is None else color_array[selection_mask]
+
+    return x_arr[selection_mask, :], y_arr[selection_mask], ratio_indexed
 

@@ -22,27 +22,28 @@ data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',
 data_matrix = data_matrix[:, -12:]
 x_range = np.arange(12)
 
-target_idcs = {'white-noise':116,
-               'cosmic-ray': 1,
-               'emission':81,
-               'doublet-em':46,
-               'continuum':32,
-               'dead-pixel':34,
-               'absorption': 109,
-               'doublet-abs':129}
+target = 'doublet-abs'
 
-fig_cfg = {"figure.dpi" : 350,
-           "figure.figsize" : (12, 2),
-           'axes.titlesize': 40,
-           "axes.labelsize": 16,
-           "xtick.labelsize": 14,
-           'font.family': 'Times New Roman',
-           "text.usetex": True,
-           }
-
-conf = lime.theme.fig_defaults(fig_cfg)
-
+conf = lime.theme.fig_defaults()
 with rc_context(conf):
+
+    for idx in np.where(y_arr == target)[0]:
+
+        fig, ax = plt.subplots()
+        y_arr = data_matrix[idx, :]
+        ax.step(x_range, y_arr, where='mid', color=aspect.cfg['colors'][target], linewidth=3)
+        ax.set_title(f"{target.capitalize()} {idx}")
+
+        ax.set_ylabel('')
+        ax.set_yticks([])  # Remove y-axis ticks
+        ax.set_yticklabels([])
+        ax.set_xlabel('')
+        ax.set_xticks([])  # Remove y-axis ticks
+        ax.set_xticklabels([])
+
+        plt.tight_layout()
+        plt.show()
+
 
     # Create figure and a 2x4 grid
     fig = plt.figure(figsize=(12, 6))
