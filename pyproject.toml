@@ -1,6 +1,6 @@
 [project]
 name = "aspect-stable"
-version = "0.5.0"
+version = "0.5.1"
 readme = "README.rst"
 requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
@@ -19,6 +19,22 @@ classifiers = ["Programming Language :: Python :: 3",
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"aspect" = ["aspect.toml",
+            "changelog.txt",
+            "models/*.toml",
+            "models/*.joblib"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+mpl-baseline-path = 'tests/baseline'
+mpl-results-path = 'tests/outputs'
+mpl-results-always = false
+addopts = "-p no:asdf_schema_tester"
+
 [project.optional-dependencies]
 docs = ["sphinx-rtd-theme~=3.0",
         "ipympl~=0.9",
@@ -28,9 +44,3 @@ tests = ["pytest~=8.4",
          "pytest-cov~=7.0",
          "pytest-mpl~=0.17"]
 
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-mpl-baseline-path = 'tests/baseline'
-mpl-results-path = 'tests/outputs'
-mpl-results-always = false
-addopts = "-p no:asdf_schema_tester"

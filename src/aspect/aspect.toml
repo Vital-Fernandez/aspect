@@ -1,6 +1,6 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.5.0'
+version = '0.5.1'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
 
