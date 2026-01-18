@@ -27,11 +27,12 @@ fig_cfg = {"figure.dpi" : 350,
 
 output_folder=Path('/home/vital/Dropbox/Astrophysics/Seminars/2024_BootCamp')
 
-spec_address = '/home/vital/PycharmProjects/ceers-data/data/spectra/CEERs_DR0.9/nirspecDDT/prism/hlsp_ceers_jwst_nirspec_nirspecDDT-001586_prism_dr0.9_x1d.fits'
+spec_address = '/home/vital/Dropbox/Astrophysics/Data/CEERs/hlsp_ceers_jwst_nirspec_nirspecDDT-001586_prism_dr0.9_x1d.fits'
 
 spec = lime.Spectrum.from_file(spec_address, instrument='nirspec', redshift=redshift, crop_waves=(1.9, 2.03))
 spec.unit_conversion('AA', 'FLAM')
 # spec.plot.spectrum(show_err=True)
+conf = lime.theme.set_style('dark')
 ax_label = lime.theme.ax_defaults(observation=spec, fig_type='default')
 conf = lime.theme.fig_defaults(fig_cfg)
 with rc_context(conf):
@@ -57,8 +58,8 @@ with rc_context(conf):
     ax.set_xticks([])  # Remove y-axis ticks
     plt.tight_layout()
     # plt.show()
-    plt.savefig(fig_folder/'line_uncertainty.png')
-
+    plt.savefig(fig_folder/'line_uncertainty_dark.png')
+    print(fig_folder/'line_uncertainty_dark.png')
     # ax.step(spec.wave_rest, spec.flux, where='mid', color='#ffcccc',
     #         label=r'Box pixel flux $\mathbf{\left(F_{n, i}\right)}$')
     # ax.fill_between(x=spec.wave_rest, y1=err_min, y2=err_max, step='mid', alpha=0.8, color='#ffe6cc', ec=None,

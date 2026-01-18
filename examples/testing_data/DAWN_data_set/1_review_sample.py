@@ -3,8 +3,12 @@ from pathlib import Path
 
 
 
-fname = './aspect_DAWN_prism_v3_selection.csv'
+fname = './aspect_DAWN_prism_v4_selection.csv'
 sample_df = lime.load_frame(fname)
+
+# idcs_prism = sample_df.file.str.contains('prism')
+# sample_prism = sample_df.loc[idcs_prism]
+# lime.save_frame('./aspect_DAWN_prism_v4_selection.csv', sample_prism)
 
 # Locate the spectra
 spec_dir = Path("/home/vital/Astrodata/DAWN")

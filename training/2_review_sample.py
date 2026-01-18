@@ -13,6 +13,14 @@ output_folder = Path(sample_cfg['meta']['results_folder'])
 y_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt', dtype=str)
 data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',')
 
+# Plot sample
+n_points = 5000
+shape_list = ['emission', 'cosmic-ray']
+sample_plotter = aspect.plots.CheckSample(data_matrix, y_arr, idx_features=12, sample_size=n_points, categories=shape_list)
+sample_plotter.show()
+
+
+
 # # Min - max log
 # min_arr = data_matrix[:, 2]
 # max_arr = data_matrix[:, 3]
@@ -57,10 +65,4 @@ data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',
 # sample_plotter = aspect.plots.CheckSample(data_matrix, y_arr, idx_features=12, sample_size=n_points, categories=shape_list,
 #                                           color_array=ratio_arr)
 # sample_plotter.show()
-
-# Plot sample
-n_points = 5000
-shape_list = ['white-noise', 'continuum', 'cosmic-ray', 'absorption']#, 'doublet-abs']
-sample_plotter = aspect.plots.CheckSample(data_matrix, y_arr, idx_features=12, sample_size=n_points, categories=shape_list)
-sample_plotter.show()
 

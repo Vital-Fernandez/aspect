@@ -5,6 +5,8 @@ from astropy.cosmology import Planck18 as cosmo
 from matplotlib import rc_context, pyplot as plt
 import matplotlib.transforms as transforms
 
+lime.theme.set_style('dark')
+
 # Calculate the lookback time and the age of the universe at the given redshift
 redshift = 4.299
 lookback_time = cosmo.lookback_time(redshift)
@@ -24,7 +26,7 @@ fig_cfg = {"figure.dpi" : 350,
 
 output_folder=Path('/home/vital/Dropbox/Astrophysics/Seminars/2024_BootCamp')
 
-spec_address = '/home/vital/PycharmProjects/ceers-data/data/spectra/CEERs_DR0.9/nirspecDDT/prism/hlsp_ceers_jwst_nirspec_nirspecDDT-001586_prism_dr0.9_x1d.fits'
+spec_address = '/home/vital/Dropbox/Astrophysics/Data/CEERs/hlsp_ceers_jwst_nirspec_nirspecDDT-001586_prism_dr0.9_x1d.fits'
 spec = lime.Spectrum.from_file(spec_address, instrument='nirspec', redshift=redshift, crop_waves=(0.75, 5.2))
 spec.unit_conversion('AA', 'FLAM')
 
@@ -67,5 +69,5 @@ with rc_context(conf):
     ax.spines['left'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.set_xlim(3250, 5250)
-    plt.show()
-    # plt.savefig(fig_folder/'detector_motion.png')
+    # plt.show()
+    plt.savefig(fig_folder/'detector_motion_dark.png')

@@ -1,10 +1,10 @@
 [meta]
-version = '12_pixels_v10'
+version = '12_pixels_v11'
 results_folder = '/home/vital/Astrodata/aspect/medium_box'
 scale = 'min-max-log'
 name = '12_pixels'
 
-[properties_12_pixels_v10]
+[properties_12_pixels_v11]
 
 # Global
 box_pixels = 12
@@ -23,8 +23,9 @@ int_ratio_log_base = 10000
 noise_cont = 1
 
 # Sample size
-int_ratio_points = 5000 #5000
-res_ratio_points = 1000 #1000
+include_fit=false
+int_ratio_points = 500 #5000
+res_ratio_points = 100 #1000
 #Input sample has 9329554 entries:
 #- absorption: 1438819
 #- continuum: 1281052
@@ -79,7 +80,7 @@ doublet_abs.'min_separation' = 1.2
 doublet_abs.'max_separation' = 3
 doublet_abs.'discrepancy_factors' = [0.7, 1.3]
 
-[randomforest_12_pixels_v10]
+[randomforest_12_pixels_v11]
 box_size = 12
 sample_size = 600000
 #sample_size = 180000
@@ -96,3 +97,25 @@ estimator_params."verbose" = 0
 estimator_params."n_jobs" = 10
 estimator_params."min_samples_split" = 2000
 estimator_params."min_samples_leaf" = 2000
+
+[randomforest_12_pixels_flux_v11]
+box_size = 12
+sample_size = 600000
+#sample_size = 180000
+test_sample_size_fraction = 0.1
+
+estimator."module" = "sklearn.ensemble"
+estimator."class" = "RandomForestRegressor"
+
+estimator_params."criterion" = "squared_error"
+estimator_params."random_state" = 42
+estimator_params."n_estimators" = 60
+estimator_params."max_depth" = 8
+estimator_params."max_features" = "sqrt"
+estimator_params."verbose" = 0
+estimator_params."n_jobs" = 10
+
+estimator_params."bootstrap" = true
+estimator_params."oob_score" = true
+estimator_params."min_samples_split" = 200
+estimator_params."min_samples_leaf" = 100

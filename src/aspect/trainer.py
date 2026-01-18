@@ -32,7 +32,7 @@ def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features, n_scal
 
 
 def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_folder=None, test_fraction=0.1,
-                       random_state=None):
+                       random_state=None, classification=True):
 
     # Preparing the estimator:
     print(f'\nLoading estimator: {fit_cfg["estimator"]["class"]}')
@@ -61,44 +61,49 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
     model_address = output_folder/f'{model_label}.joblib'
     joblib.dump(ml_function, model_address)
 
-    # Run initial diagnostics
-    print(f'\nReloading model from: {model_address}')
-    start_time = time()
-    ml_function = joblib.load(model_address)
-    fit_time = np.round((time()-start_time), 3)
-    print(f'- completed ({fit_time} seconds)')
+    if classification:
 
-    print(f'\nRuning prediction on test set ({y_test.size} points)')
-    start_time = time()
-    y_pred = ml_function.predict(X_test)
-    print(f'- completed ({(time()-start_time):0.1f} seconds)')
+        # Run initial diagnostics
+        print(f'\nReloading model from: {model_address}')
+        start_time = time()
+        ml_function = joblib.load(model_address)
+        fit_time = np.round((time()-start_time), 3)
+        print(f'- completed ({fit_time} seconds)')
 
-    # Testing confussion matrix
-    print(f'\nConfusion matrix in test set ({y_test.size} points)')
-    start_time = time()
-    conf_matrix_test = confusion_matrix(y_test, y_pred, normalize="all")
-    print(f'- completed ({(time()-start_time):0.1f} seconds)')
+        print(f'\nRuning prediction on test set ({y_test.size} points)')
+        start_time = time()
+        y_pred = ml_function.predict(X_test)
+        print(f'- completed ({(time()-start_time):0.1f} seconds)')
 
-    # Precision, recall and f1:
-    print(f'\nF1, Precision and recall diagnostics ({y_test.size} points)')
-    start_time = time()
-    pres = precision_score(y_test, y_pred, average='macro')
-    recall = recall_score(y_test, y_pred, average='macro')
-    f1 = f1_score(y_test, y_pred, average='macro')
-    print(f'- completed ({(time()-start_time):0.1f} seconds)')
+        # Testing confussion matrix
+        print(f'\nConfusion matrix in test set ({y_test.size} points)')
+        start_time = time()
+        conf_matrix_test = confusion_matrix(y_test, y_pred, normalize="all")
+        print(f'- completed ({(time()-start_time):0.1f} seconds)')
 
-    print(f'\nModel outputs')
-    print(f'- F1: \n {f1}')
-    print(f'- Precision: \n {pres}')
-    print(f'- Recall: \n {recall}')
-    print(f'- Testing confusion matrix: \n {conf_matrix_test}')
-    print(f'- Fitting time (seconds): \n {float(fit_time)}')
+        # Precision, recall and f1:
+        print(f'\nF1, Precision and recall diagnostics ({y_test.size} points)')
+        start_time = time()
+        pres = precision_score(y_test, y_pred, average='macro')
+        recall = recall_score(y_test, y_pred, average='macro')
+        f1 = f1_score(y_test, y_pred, average='macro')
+        print(f'- completed ({(time()-start_time):0.1f} seconds)')
 
-    # Save results into a TOML file
-    toml_path = output_folder/f'{model_label}.toml'
-    output_dict = {'resuts': {'f1':f1, 'precision':pres, 'Recall':recall, 'confusion_matrix':conf_matrix_test,
-                              'fit_time': fit_time}, 'properties': fit_cfg,}
-    with open(toml_path, 'w') as f:
-        toml.dump(output_dict, f)
+        print(f'\nModel outputs')
+        print(f'- F1: \n {f1}')
+        print(f'- Precision: \n {pres}')
+        print(f'- Recall: \n {recall}')
+        print(f'- Testing confusion matrix: \n {conf_matrix_test}')
+        print(f'- Fitting time (seconds): \n {float(fit_time)}')
+
+        # Save results into a TOML file
+        toml_path = output_folder/f'{model_label}.toml'
+        output_dict = {'resuts': {'f1':f1, 'precision':pres, 'Recall':recall, 'confusion_matrix':conf_matrix_test,
+                                  'fit_time': fit_time}, 'properties': fit_cfg,}
+        with open(toml_path, 'w') as f:
+            toml.dump(output_dict, f)
+
+
+
 
     return

@@ -6,6 +6,8 @@ import aspect
 from pathlib import Path
 import lime
 
+lime.theme.set_style('dark')
+
 # Configuration
 cfg_file = '../../training/12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
@@ -76,7 +78,7 @@ with rc_context(conf):
 
     plt.tight_layout()
     # plt.show()
-    plt.savefig(fig_folder/'categories_example.png')
+    plt.savefig(fig_folder/'categories_example_dark.png')
 
 
 
