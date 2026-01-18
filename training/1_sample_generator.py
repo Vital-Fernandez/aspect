@@ -199,7 +199,7 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
             if category_check['emission']:
                 shape = 'emission'
                 if comps_counter[shape] < sample_size:
-                    local_include = True if (amp >= 3) and (amp <= 50) else include_fit
+                    local_include = include_fit  # True if (amp >= 3) and (amp <= 50) else include_fit
                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
                                          amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=local_include)
                     comps_counter[shape] += 1
@@ -207,7 +207,7 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
         # Single pixel
         else:
             if category_check['cosmic-ray']:
-                local_include = True if (amp >= 3) and (amp <= 50) else include_fit
+                local_include = include_fit #True if (amp >= 3) and (amp <= 50) else include_fit
                 (amp >= 3) and (amp <= 50)
                 if int_ratio > detection_value + cr_boundary:
                     shape = 'cosmic-ray'

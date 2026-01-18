@@ -1,6 +1,7 @@
 [meta]
 version = '12_pixels_v11'
-results_folder = '/home/vital/Astrodata/aspect/medium_box'
+#results_folder = '/home/vital/Astrodata/aspect/medium_box'
+results_folder = 'D:\astro_data\aspect\medium_box'
 scale = 'min-max-log'
 name = '12_pixels'
 
@@ -24,8 +25,8 @@ noise_cont = 1
 
 # Sample size
 include_fit=false
-int_ratio_points = 500 #5000
-res_ratio_points = 100 #1000
+int_ratio_points = 5000 #5000
+res_ratio_points = 1000 #1000
 #Input sample has 9329554 entries:
 #- absorption: 1438819
 #- continuum: 1281052
@@ -98,7 +99,7 @@ estimator_params."n_jobs" = 10
 estimator_params."min_samples_split" = 2000
 estimator_params."min_samples_leaf" = 2000
 
-[randomforest_12_pixels_flux_v11]
+[randomforest_flux_12_pixels_v11]
 box_size = 12
 sample_size = 600000
 #sample_size = 180000
