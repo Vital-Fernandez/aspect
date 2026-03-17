@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt, rc_context
 import lime
 
-
+lime.theme.set_style('dark')
 # Parameters
 sigma = 1.0            # Standard deviation of the Gaussians
 A = 1.0                # Amplitude
@@ -30,4 +30,4 @@ with rc_context(lime.theme.fig_defaults({"figure.dpi": 600, "figure.figsize": [5
     ax.set_ylim(-0.25, 2.00)
     ax.axis('off')
     ax.legend(loc='lower center', ncol=1, framealpha=1, bbox_to_anchor=(0.5, 0.15))
-    plt.savefig('gaussians_separations.png', bbox_inches='tight')
+    plt.savefig('gaussians_separations_dark.png', bbox_inches='tight')

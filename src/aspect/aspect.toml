@@ -1,6 +1,6 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.5.2'
+version = '0.5.3'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
 
@@ -24,7 +24,7 @@ white-noise = '#C41E3A'         # Red
 continuum = '#F48CBA'           # Pink
 emission = '#00FF98'            # Spring Green
 cosmic-ray= '#FFF468'           # Yellow
-broad = '#0070DD'         # Blue
+broad = '#0070DD'               # Blue
 doublet-em = '#3FC7EB'          # Light blue
 peak = '#C69B6D'                # Tan
 absorption = '#FF7C0A'          # Orange

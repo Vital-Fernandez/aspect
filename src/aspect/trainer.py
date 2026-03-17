@@ -14,7 +14,7 @@ from pathlib import Path
 from .io import cfg as aspect_cfg
 
 
-def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features, n_scale_features, random_state=None, classification=True):
+def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features=None, n_scale_features=None, random_state=None, classification=True):
 
     # Split into training and testing:
 
@@ -45,6 +45,9 @@ def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features, n_scal
         X_train, X_test, y_train, y_test = train_test_split(x_arr, y_arr, test_size=test_fraction,
                                                             random_state=random_state, shuffle=True)
 
+    # Crop the database if requested
+    if n_pixel_features and n_scale_features:
+        X_train, X_test = X_train[:, -n_pixel_features - n_scale_features:], X_test[:, -n_pixel_features - n_scale_features:]
 
     return X_train, y_train, X_test, y_test
 
@@ -59,8 +62,7 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
 
     # Split into training and testing:
     data_train, y_train, data_test, y_test = get_training_test_sets(x_arr, y_arr, test_fraction,
-                                                              n_pixel_features=fit_cfg['box_size'], n_scale_features=1,
-                                                              random_state=random_state, classification=classification)
+                                                                    random_state=random_state, classification=classification)
 
     # Select just the features
     feature_slice = -fit_cfg['box_size'] - 1

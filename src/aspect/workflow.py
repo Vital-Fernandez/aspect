@@ -35,7 +35,10 @@ def flux_to_image(flux_array, approximation, model_2D):
 def unpack_spec_flux(spectrum, rest_wl_lim):
 
     # Extract the mask if masked array
-    pixel_mask = ~spectrum.flux.mask
+    pixel_mask = (~spectrum.flux.mask) & (spectrum.flux.data != 0)
+
+    if spectrum.err_flux is not None:
+        pixel_mask = pixel_mask & (spectrum.err_flux.data != 0)
 
     # Limit to region if requested # TODO warning negative entries
     if rest_wl_lim is not None:
@@ -59,6 +62,7 @@ def enbox_spectrum(input_flux, box_size, range_box, n_scale_features):
     n_rows = input_flux.size - box_size
 
     # Container for the data
+    # box_containter = np.zeros((n_rows, n_columns))
     box_containter = np.empty((n_rows, n_columns))
 
     # Assign values

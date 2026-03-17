@@ -6,14 +6,14 @@ import aspect
 from aspect.tools import detection_function, cosmic_ray_function, broad_component_function
 from lime import theme
 
-
+theme.set_style('dark')
 # Output plot
 fig_folder = Path('/home/vital/Dropbox/Astrophysics/Tools/aspect')
 
 # Configuration file
 cfg_file = '../../training/12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
-params = aspect.load_cfg(cfg_file)['properties_12_pixels_v7']
+params = aspect.load_cfg(cfg_file)['properties_12_pixels_v11']
 
 # Parameters
 int_ratio_max = params['int_ratio_max']
@@ -38,12 +38,12 @@ fig_cfg = theme.fig_defaults({'figure.dpi': 350,
 continuum_limit = params['white_noise']['max_int_ratio']
 
 # Cosmic rays
-int_cosmic_ray = np.linspace(params['doublet']['min_int_ratio'], int_ratio_max, 100)
+int_cosmic_ray = np.linspace(params['doublet_em']['min_int_ratio'], int_ratio_max, 100)
 res_cosmic_ray = cosmic_ray_function(int_cosmic_ray, res_ratio_check=False)
 
 # Doublet
-x_double_min, x_doublet_max = params['doublet']['min_res_ratio'], params['doublet']['max_res_ratio']  # x-axis boundaries
-y_doublet_min, y_doublet_max = params['doublet']['min_int_ratio'], params['doublet']['max_int_ratio']  # y-axis boundaries
+x_double_min, x_doublet_max = params['doublet_em']['min_res_ratio'], params['doublet_em']['max_res_ratio']  # x-axis boundaries
+y_doublet_min, y_doublet_max = params['doublet_em']['min_int_ratio'], params['doublet_em']['max_int_ratio']  # y-axis boundaries
 res_doublet = np.linspace(x_double_min, x_doublet_max, 100)
 
 # Plot
@@ -52,10 +52,10 @@ with rc_context(fig_cfg):
     fig, ax = plt.subplots()
 
     # Detection boundary
-    ax.plot(x_detection, y_detection, color='black', label='Detection boundary')
+    ax.plot(x_detection, y_detection, color=theme.colors['fg'], label='Detection boundary')
 
     # Single pixel line boundary
-    ax.plot(x_pixel_lines[idcs_crop], y_pixel_lines[idcs_crop], linestyle='--', color='black',
+    ax.plot(x_pixel_lines[idcs_crop], y_pixel_lines[idcs_crop], linestyle='--', color=theme.colors['fg'],
             label='Single pixel boundary')
 
     # Positive and negative detection
@@ -67,10 +67,10 @@ with rc_context(fig_cfg):
     ax.fill_betweenx(int_cosmic_ray, 0, res_cosmic_ray, color=aspect.cfg['colors']['cosmic-ray'], label='cosmic-ray', edgecolor='none')
 
     # Doublet
-    ax.fill_between(res_doublet, y_doublet_min, y_doublet_max, color=aspect.cfg['colors']['doublet'], alpha=0.8, label='doublet')
+    ax.fill_between(res_doublet, y_doublet_min, y_doublet_max, color=aspect.cfg['colors']['doublet-em'], alpha=0.8, label='doublet')
 
     # Wording
-    ax.update({'xlabel': r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Gaussian sigma in pixels)',
+    ax.update({'xlabel': r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Velocity dispersion in pixels)',
                'ylabel': r'$\frac{A_{gas}}{\sigma_{noise}}$ (Signal-to-noise)'})
     ax.legend(loc='lower center', ncol=3, framealpha=0.95, fontsize=10)
 
@@ -83,7 +83,7 @@ with rc_context(fig_cfg):
     ax2 = ax.twiny()
     ticks_values = ax.get_xticks()
     ticks_labels = [f'{tick:.0f}' for tick in ticks_values*6]
-    ax2.set_xticks(ticks_values)  # Set the tick positions
+    ax2.set_xticks(ticks_values)
     ax2.set_xticklabels(ticks_labels)
     ax2.set_xlabel(r'$b_{pixels}$ (detection box width in pixels)')
 
@@ -92,5 +92,5 @@ with rc_context(fig_cfg):
     ax.grid(axis='y', color='0.95', zorder=1)
 
     plt.tight_layout()
-    plt.savefig(fig_folder/'diagnostic_plot.png')
-    plt.show()
+    plt.savefig(fig_folder/'diagnostic_plot_dark.png')
+    # plt.show()

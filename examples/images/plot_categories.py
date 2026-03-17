@@ -11,11 +11,9 @@ lime.theme.set_style('dark')
 # Configuration
 cfg_file = '../../training/12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
-version = sample_cfg['meta']['version']
-norm = sample_cfg['meta']['scale']
+version = '12_pixels_v8'
 
 output_folder = Path(sample_cfg['meta']['results_folder'])
-categories = sample_cfg[f'properties_{version}']['categories']
 fig_folder = Path(f'/home/vital/Dropbox/Astrophysics/Tools/aspect')
 
 # Read the sample files:

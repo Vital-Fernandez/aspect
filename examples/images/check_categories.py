@@ -61,7 +61,7 @@ with rc_context(conf):
     axes.append(fig.add_subplot(gs[1, 3]))  # P8
 
     # Plot in the first 7 axes
-    for i, item in enumerate(target_idcs.items()):
+    for i, item in enumerate(z.items()):
         comp, idx = item
         y_arr = data_matrix[idx, :]
         axes[i].step(x_range, y_arr, where='mid', color=aspect.cfg['colors'][comp], linewidth=3)

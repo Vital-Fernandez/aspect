@@ -1,8 +1,11 @@
-import aspect
 import numpy as np
+import pandas as pd
+import aspect
+import lime
 from pathlib import Path
 from matplotlib import pyplot as plt, rc_context
-import lime
+
+lime.theme.set_style('dark')
 
 # Configuration
 cfg_file = '12_pixels.toml'
@@ -17,46 +20,62 @@ data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_{version}.txt', delim
 
 # Indices emission
 sn_max = 100
-idcs_emis = (y_arr == 'emission') & (data_matrix[:, 0] < sn_max) & ~np.isnan(data_matrix[:, 5])
+idcs_emis = ((y_arr == 'emission') | (y_arr == 'cosmic-ray')) & (data_matrix[:, 0] < sn_max) & ~np.isnan(data_matrix[:, 5])
 data_matrix = data_matrix[idcs_emis, :]
+
+# Recover the data columns
 
 #      5         6          7         8           9           10
 #  true_flux, true_err, intg_flux, intg_err, profile_flux, profile_err
-# Recover the data columns
+num_entries = 50
 sn_ratio = data_matrix[:, 0]
 res_ratio = data_matrix[:, 1]
-true_flux = data_matrix[:, 6]/data_matrix[:, 5]
-intg_flux = data_matrix[:, 8]/data_matrix[:, 7]
-gauss_flux = data_matrix[:, 10]/data_matrix[:, 9]
+true_flux = data_matrix[:, 5]
+gauss_flux = data_matrix[:, 9]
 
-num_entries = 10000
-fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (5, 5)})
+# true_flux = data_matrix[:, 6]/data_matrix[:, 5]
+# intg_flux = data_matrix[:, 8]/data_matrix[:, 7]
+# gauss_flux = data_matrix[:, 10]/data_matrix[:, 9]
+
+# true_flux = np.abs(data_matrix[:, 5] - data_matrix[:, 5])/ data_matrix[:, 6]
+# intg_flux = np.abs(data_matrix[:, 5] - data_matrix[:, 7])/ data_matrix[:, 8]
+# gauss_flux = np.abs(data_matrix[:, 5] - data_matrix[:, 9])/ data_matrix[:, 10]
+
+# gauss_flux = data_matrix[:, 5]
+fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 400, "axes.labelsize": 20,
+                                            "xtick.labelsize": 16, "ytick.labelsize": 16})
 with rc_context(fig_cfg):
 
-    fig, ax = plt.subplots()
-    sc = ax.scatter(res_ratio[:num_entries], sn_ratio[:num_entries], c=true_flux[:num_entries], alpha=0.9,
-                    vmin=0, vmax=0.35)
+    # for idx, (ref, flux_arr) in enumerate(zip(['True flux', 'Integrated flux', 'Gaussian flux'], [true_flux, intg_flux, gauss_flux])):
+    for idx, (ref, flux_arr) in enumerate(zip(['True flux', 'Gaussian flux'], [true_flux, gauss_flux])):
 
-    # sc = ax.scatter(res_ratio[:num_entries], sn_ratio[:num_entries], c=intg_flux[:num_entries], alpha=0.9,
-    #                 vmin=0, vmax=0.5)
-    #
-    # sc = ax.scatter(res_ratio[:num_entries], sn_ratio[:num_entries], c=gauss_flux[:num_entries], alpha=0.9,
-    #                 vmin=0, vmax=0.5)
+        fig, ax = plt.subplots()
 
-    # ratio = np.abs(gauss_flux[:num_entries]-true_flux[:num_entries])
-    # sc = ax.scatter(res_ratio[:num_entries], sn_ratio[:num_entries], c=ratio, alpha=0.9, vmin=0, vmax=0.5,
-    #                 edgecolors='none')
+        # Get data arrays to generate a matching regular grid
+        x_grid = np.linspace(res_ratio.min(), res_ratio.max(), num=num_entries)
+        y_grid = np.logspace(np.log10(sn_ratio.min()), np.log10(sn_ratio.max()), num=num_entries)
+        x_grid = x_grid[np.abs(x_grid[:, None] - res_ratio).argmin(axis=0)]
+        y_grid = y_grid[np.abs(y_grid[:, None] - sn_ratio).argmin(axis=0)]
 
-    # Add a colorbar on the right
-    cbar = plt.colorbar(sc)
-    cbar.set_label(r'$\frac{\sigma_{line}}{F_{line}}$ (Normalized scatter)')
+        # Build a temporary dataframe just for groupby
+        df_temp = pd.DataFrame({'x_snapped': x_grid, 'y_snapped': y_grid, 'A': true_flux})
+        df_snapped = df_temp.groupby(['x_snapped', 'y_snapped']).agg(A=('A', 'mean')).reset_index()
 
-    ax.update({'xlabel': r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Gaussian sigma in pixels)',
-               'ylabel': r'$\frac{A_{gas}}{\sigma_{noise}}$ (Signal-to-noise)'})
+        #
+        sc = ax.scatter(df_snapped['x_snapped'], df_snapped['y_snapped'], c=df_snapped['A'], cmap='viridis')
 
-    # ax.set_xlim((0, 20))
-    # ax.set_ylim((-10, 10))
-    plt.show()
+        # Add a colorbar on the right
+        cbar = plt.colorbar(sc)
+        cbar.set_label(r'$\frac{\sigma_{line}}{F_{line}}$ (Coefficient of variation)')
+        ax.update({'xlabel': r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Velocity dispersion in pixels)',
+                   'ylabel': r'$\frac{A_{gas}}{\sigma_{noise}}$ (Signal-to-noise)'})
+
+        # ax.set_xlim((0.25, 2))
+        # ax.set_ylim((4.5, 10))
+        ax.set_yscale('log')
+        plt.tight_layout()
+        plt.show()
+        # plt.savefig(f'{ref}_coeff_var.png')
 
 
 # # Create scatter plot with colors mapped to 'values'

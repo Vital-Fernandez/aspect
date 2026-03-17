@@ -6,6 +6,8 @@ from sklearn.metrics import confusion_matrix
 from matplotlib import pyplot as plt, rc_context
 from lime import theme
 
+theme.set_style('dark')
+
 # Configuration
 cfg_file = '../../training/12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
@@ -25,7 +27,8 @@ data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_{version}.txt', delim
 
 # Training the sample
 X_train, y_train, X_test, y_test = aspect.trainer.get_training_test_sets(data_matrix, y_arr, 0.1,
-                                                                         n_pixel_features=sample_cfg[f'properties_{version}']['box_pixels'], n_scale_features=1)
+                                                                         n_pixel_features=sample_cfg[f'properties_{version}']['box_pixels'],
+                                                                         n_scale_features=1)
 # Load the model
 ml_function = aspect.load_model(model_address)
 y_pred = ml_function.predict(X_test)
@@ -66,5 +69,5 @@ with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
     # ax.title.set_color("#CCCCCC")            # Title
 
     # Save and show
-    fig.savefig(f'{fig_folder}/aspect_confusion_matrix_{version}_{norm}.png', bbox_inches='tight')
+    fig.savefig(f'{fig_folder}/aspect_confusion_matrix_{version}_{norm}_dark.png', bbox_inches='tight')
     # plt.show()

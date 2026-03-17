@@ -65,9 +65,9 @@ with rc_context(lime.theme.fig_defaults(conf_plot)):
 
     fig.suptitle(f"Redshift comparison: {sample_df.index.size} galaxies, 0.37 seconds per object", fontsize=16)
 
-plt.tight_layout()
-plt.show()
-
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig('./redshift_estimation.png')
 
 # 'title': f'Dawn galaxy redshift comparison ({np.sum(idcs)}/{sample_df.index.size})',
 

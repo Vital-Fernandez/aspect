@@ -47,37 +47,37 @@ with rc_context(fig_cfg):
     plt.show()
 
 
-# fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (5, 5)})
-# with rc_context(fig_cfg):
-#     fig, ax = plt.subplots()
-#
-#     idcs = (intg_flux > 0) & (intg_flux < 1.00) & ~np.isnan(intg_flux) & (gauss_flux > 0) & (gauss_flux < 1.00) & ~np.isnan(gauss_flux)
-#     arr = (data_matrix[:, 7][idcs] - data_matrix[:, 5][idcs])/data_matrix[:, 5][idcs]
-#     ax.hist(arr, bins=20, label=f'Integrated ({arr.shape})', density=True,
-#             histtype = 'step', hatch = '/', edgecolor = 'orange')
-#
-#     arr = (data_matrix[:, 9][idcs] - data_matrix[:, 5][idcs])/data_matrix[:, 5][idcs]
-#     ax.hist(arr, bins=20, label=f'Gaussian ({arr.shape})', density=True,
-#             histtype='step', hatch='o', edgecolor='green')
-#
-#     ax.legend()
-#     plt.show()
+fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (5, 5)})
+with rc_context(fig_cfg):
+    fig, ax = plt.subplots()
+
+    idcs = (intg_flux > 0) & (intg_flux < 1.00) & ~np.isnan(intg_flux) & (gauss_flux > 0) & (gauss_flux < 1.00) & ~np.isnan(gauss_flux)
+    arr = (data_matrix[:, 7][idcs] - data_matrix[:, 5][idcs])/data_matrix[:, 5][idcs]
+    ax.hist(arr, bins=20, label=f'Integrated ({arr.shape})', density=True,
+            histtype = 'step', hatch = '/', edgecolor = 'orange')
+
+    arr = (data_matrix[:, 9][idcs] - data_matrix[:, 5][idcs])/data_matrix[:, 5][idcs]
+    ax.hist(arr, bins=20, label=f'Gaussian ({arr.shape})', density=True,
+            histtype='step', hatch='o', edgecolor='green')
+
+    ax.legend()
+    plt.show()
 
 
-# fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (5, 5)})
-# with rc_context(fig_cfg):
-#     fig, ax = plt.subplots()
-#
-#     ax.hist(true_flux, bins=20, label=f'True normalized scatter ({np.sum(~np.isnan(true_flux))})', density=True,
-#             histtype='step', facecolor='blue', edgecolor='none', alpha=0.5, fill=True)
-#
-#     idcs = (intg_flux > 0) & (intg_flux < 1.00)
-#     ax.hist(intg_flux[idcs], bins=20, label=f'Intg normalized scatter ({np.sum(~np.isnan(intg_flux[idcs]))})', density=True,
-#             histtype = 'step', hatch = '/', edgecolor = 'orange')
-#
-#     idcs = (gauss_flux > 0) & (gauss_flux < 1.00)
-#     ax.hist(gauss_flux[idcs], bins=20, label=f'Gauss normalized scatter ({np.sum(~np.isnan(gauss_flux[idcs]))})', density=True,
-#             histtype='step', hatch='o', edgecolor='green')
-#
-#     ax.legend()
-#     plt.show()
+fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (5, 5)})
+with rc_context(fig_cfg):
+    fig, ax = plt.subplots()
+
+    ax.hist(true_flux, bins=20, label=f'True normalized scatter ({np.sum(~np.isnan(true_flux))})', density=True,
+            histtype='step', facecolor='blue', edgecolor='none', alpha=0.5, fill=True)
+
+    idcs = (intg_flux > 0) & (intg_flux < 1.00)
+    ax.hist(intg_flux[idcs], bins=20, label=f'Intg normalized scatter ({np.sum(~np.isnan(intg_flux[idcs]))})', density=True,
+            histtype = 'step', hatch = '/', edgecolor = 'orange')
+
+    idcs = (gauss_flux > 0) & (gauss_flux < 1.00)
+    ax.hist(gauss_flux[idcs], bins=20, label=f'Gauss normalized scatter ({np.sum(~np.isnan(gauss_flux[idcs]))})', density=True,
+            histtype='step', hatch='o', edgecolor='green')
+
+    ax.legend()
+    plt.show()

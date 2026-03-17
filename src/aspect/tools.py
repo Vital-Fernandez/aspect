@@ -34,7 +34,7 @@ def scale_min_max_orig(data, axis=None):
 
 def scale_min_max(data, box_size, axis=None, scale_parameter='min-max'):
 
-    # Norm the scale features
+    # Norm the scale features # TODO this gives error if the error is 0 and the data is 0
     data_min_array = data[:, -box_size:].min(axis=axis, keepdims=True)
     data_max_array = data[:, -box_size:].max(axis=axis, keepdims=True)
     data[:, -box_size:] = (data[:, -box_size:] - data_min_array) / (data_max_array - data_min_array)
@@ -46,14 +46,6 @@ def scale_min_max(data, box_size, axis=None, scale_parameter='min-max'):
     if scale_parameter == 'min-max-log':
         data[:, -box_size - 1] = (np.log10(data_max_array - data_min_array)/4)[:,0]
 
-    # # Norm the scale features
-    # data_min_array = data[:, -box_size:].min(axis=axis, keepdims=True)
-    # data_max_array = data[:, -box_size:].max(axis=axis, keepdims=True)
-    # data[:, -box_size:] = (data[:, -box_size:] - data_min_array) / (data_max_array - data_min_array)
-    #
-    # # Save the scaling parameters
-    # data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
-    # data[:, -box_size - 1] = ((data_max_array - data_min_array)/10000)[:,0]
 
     return
 

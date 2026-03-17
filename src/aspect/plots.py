@@ -45,7 +45,8 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
     axes_labels = None if matrix_name is None else cfg['decision_matrices'][f'{matrix_name}_labels']
 
     # Start the figure
-    with rc_context(cfg_fig):
+    theme.set_style('dark')
+    with rc_context(theme.fig_defaults(cfg_fig)):
 
         # Define colors for values
         cmap = colors.ListedColormap(['white', decision_colors[0], decision_colors[1]])
@@ -110,7 +111,7 @@ def decision_matrix_plot(matrix_arr, output_address=None, categories=None, exclu
     return
 
 def scatter_plot(fig, ax, x_arr, y_arr, labels_arr, feature_list, color_dict, alpha=0.5, idx_target=None,
-                 detection_range=None, ratio_color=None):
+                 detection_range=None, ratio_color=None, sn_limits=None):
 
     # Input user diagnostic coloring
     if ratio_color is not None:
@@ -137,6 +138,9 @@ def scatter_plot(fig, ax, x_arr, y_arr, labels_arr, feature_list, color_dict, al
 
     if detection_range is not None:
         ax.plot(detection_range, detection_function(detection_range))
+
+    if sn_limits is not None:
+        ax.set_ylim(sn_limits)
 
     return
 

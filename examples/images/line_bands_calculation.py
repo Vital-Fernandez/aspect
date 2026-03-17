@@ -6,7 +6,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib.transforms import BlendedGenericTransform, blended_transform_factory
 
 # Helper function to transfer artists
-
+lime.theme.set_style('dark')
 def transfer_artists(source_fig, dest_ax, idx_src_ax=None, close_src_fig=True):
     source_ax = source_fig.axes[0 if idx_src_ax is None else idx_src_ax]
 
@@ -119,8 +119,8 @@ cfg = {'Ar4_4711A_b':   'Ar4_4711A+He1_4713A',
 # inset.axis('off')
 
 lime.theme.plt['spectrum_width'] = 0.5
-# spec, label, velocity = spec_low, 'low resolving power', 300
-spec, label, velocity = spec_high, 'high resolving power', 170
+spec, label, velocity = spec_low, 'low resolving power', 300
+# spec, label, velocity = spec_high, 'high resolving power', 170
 bands = spec.retrieve.lines_frame(band_vsigma=velocity, line_list=line_list, fit_cfg=cfg, default_cfg_prefix=None, automatic_grouping=True)
 spec.plot.spectrum(bands=bands, in_fig=None, fig_cfg={"figure.dpi" : 600, "figure.figsize" : (8, 2)})
 print(spec.wave.size)
@@ -136,5 +136,5 @@ spec.plot.ax.spines['left'].set_visible(False)
 spec.plot.ax.tick_params(axis='both', which='both', bottom=False, top=False,  left=False,  right=False,  labelbottom=False,
                          labelleft=False)
 # spec_low.plot.show()
-plt.savefig('bands_example_large_res.png', bbox_inches='tight')
+plt.savefig('bands_example_low_res_dark.png', bbox_inches='tight')
 

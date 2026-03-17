@@ -21,31 +21,15 @@ def line_fitting(synth_arr, class_name, amp, sigma, noise_arr, wave_arr, instr_r
     spec = lime.Spectrum(wave_arr + 4861.250000, synth_arr, input_err=None, redshift=0, norm_flux=1)
     spec.fit.bands('H1_4861A', cont_source='adjacent', err_from_bands=True)
 
+    # Run the fit
+    spec = lime.Spectrum(wave_arr + 4861.250000, synth_arr, input_err=None, redshift=0, norm_flux=1)
+    spec.fit.bands('H1_4861A', cont_source='adjacent', err_from_bands=True)
+
     # Save the measurements
     true_flux = amp * 2.5066282746 * sigma
     true_err = 2 * spec.frame.at['H1_4861A', 'cont_err'] * np.sqrt(2 * sigma * 1)
     intg_flux, intg_err = spec.frame.at['H1_4861A', 'intg_flux'], spec.frame.at['H1_4861A', 'intg_flux_err']
     profile_flux, profile_err = spec.frame.at['H1_4861A', 'profile_flux'], spec.frame.at['H1_4861A', 'profile_flux_err']
-
-    # if class_name != 'emission':
-    #     return np.nan,  np.nan,  np.nan,  np.nan,  np.nan, np.nan
-    # else:
-    #     if (amp >= 3) and (amp <= 50):
-    #
-    #         # Run the fit
-    #         spec = lime.Spectrum(wave_arr + 4861.250000, synth_arr, input_err=None, redshift=0, norm_flux=1)
-    #         spec.fit.bands('H1_4861A', cont_source='adjacent', err_from_bands=True)
-    #
-    #         # Save the measurements
-    #         true_flux = amp * 2.5066282746 * sigma
-    #         true_err = 2 * spec.frame.at['H1_4861A', 'cont_err'] * np.sqrt(2 * sigma * 1)
-    #         intg_flux, intg_err = spec.frame.at['H1_4861A', 'intg_flux'], spec.frame.at['H1_4861A', 'intg_flux_err']
-    #         profile_flux, profile_err = spec.frame.at['H1_4861A', 'profile_flux'], spec.frame.at['H1_4861A', 'profile_flux_err']
-    #
-    #         return true_flux, true_err, intg_flux, intg_err, profile_flux, profile_err
-    #
-    #     else:
-    #         return np.nan,  np.nan, np.nan,  np.nan,  np.nan, np.nan
 
     return true_flux, true_err, intg_flux, intg_err, profile_flux, profile_err
 
@@ -64,7 +48,8 @@ def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box
                                                                                            amp_i, sigma_i,
                                                                                            noise_arr_i, wave_arr_i)
     else:
-        true_flux, true_err = amp * 2.5066282746 * sigma, np.nan
+        true_flux = amp * 2.5066282746 * sigma
+        true_err = 2 * 1 * np.sqrt(2 * sigma_i * 1)
         intg_flux, intg_err, profile_flux, profile_err = np.nan, np.nan, np.nan, np.nan
 
     # Store the parameters  0       1     2    3    4       5         6          7         8           9            10
@@ -81,7 +66,6 @@ version = sample_cfg['meta']['version']
 params = sample_cfg[f'properties_{version}']
 norm = sample_cfg['meta']['scale']
 aspect_categories = list(aspect.cfg['number_shape'].values())
-include_fit = params['include_fit']
 
 # Categories for the analysis
 categories = params['categories']
@@ -101,6 +85,7 @@ int_ratio_min = params['int_ratio_min']
 int_ratio_max = params['int_ratio_max']
 int_ratio_base = params['int_ratio_log_base']
 noise_cont = params['noise_cont']
+flux_calculation = params['flux_calculation']
 
 instr_res = params['instr_res']
 sample_size = params['int_ratio_points'] * params['res_ratio_points']
@@ -165,6 +150,8 @@ n_columns = 2                   + 6                    + 3                      
 
 pred_arr = np.empty(n_lines, dtype='U20')
 data_matrix = np.full((n_lines, n_columns), np.nan)
+wave_arr = mu_line + step_arr * instr_res
+noise_i = noise_cont
 
 # ---------  Loop through the conditions
 print('\nLooping through combinations')
@@ -175,9 +162,7 @@ comps_counter = dict.fromkeys(categories, 0)
 for idx, (int_ratio, res_ratio) in enumerate(bar):
 
     # Continuum components
-    wave_arr = mu_line + step_arr * instr_res
     cont_arr = gradient_arr[idx] * wave_arr + cont_level
-    noise_i = noise_cont
     white_noise_arr = np.random.normal(loc=0, scale=noise_cont, size=uncrop_array_size)
 
     # Line components
@@ -199,28 +184,25 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
             if category_check['emission']:
                 shape = 'emission'
                 if comps_counter[shape] < sample_size:
-                    local_include = include_fit  # True if (amp >= 3) and (amp <= 50) else include_fit
                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
-                                         amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=local_include)
+                                         amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
                     comps_counter[shape] += 1
 
         # Single pixel
         else:
             if category_check['cosmic-ray']:
-                local_include = include_fit #True if (amp >= 3) and (amp <= 50) else include_fit
-                (amp >= 3) and (amp <= 50)
                 if int_ratio > detection_value + cr_boundary:
                     shape = 'cosmic-ray'
                     for i in np.arange(3):
                         if comps_counter[shape] < sample_size:
                             counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
-                                                 amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=local_include)
+                                                 amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
                             comps_counter[shape] += 1
                 else:
                     shape = 'emission'
                     if comps_counter[shape] < sample_size:
                         counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
-                                             amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=local_include)
+                                             amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
                         comps_counter[shape] += 1
 
         # Flux absorption array:
