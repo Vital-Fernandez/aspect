@@ -5,8 +5,10 @@ from aspect.plots import plot_comps_detect
 # from matplotlib import pyplot as plt
 from pathlib import Path
 
+
 CHOICE_DM = np.array(cfg['decision_matrices']['choice'])
 TIME_DM = np.array(cfg['decision_matrices']['time'])
+
 
 def flux_to_image(flux_array, approximation, model_2D):
 
@@ -115,8 +117,6 @@ def detection_revision(seg_pred, box_size, new_type, new_confidence):
     return idcs_pred, new_pred, new_conf
 
 
-
-
 class DetectionModel:
 
     def __init__(self, model_address=None, n_jobs=None, verbose=0):
@@ -143,7 +143,7 @@ class DetectionModel:
 
 class ModelManager:
 
-    def __init__(self, model_address=None,):
+    def __init__(self, model_address=None, n_jobs=4):
 
         # Global parameters
         self.n_mc = 100
@@ -152,10 +152,10 @@ class ModelManager:
         self.n_scale_features = 1
 
         # Default values
-        model_address = DEFAULT_MODEL_ADDRESS if model_address is None else model_address
+        self.model_address = DEFAULT_MODEL_ADDRESS if model_address is None else Path(model_address)
 
         # Load the model
-        self.medium = DetectionModel(model_address)
+        self.medium = DetectionModel(self.model_address, n_jobs)
         self.large = None
 
         # Largest reference model parameters
@@ -216,8 +216,8 @@ class ModelManager:
                                                                out_confidence)
 
             # Only pass if more than half
-            # half_check = idcs_pred[6:].sum() > 5
-            half_check = idcs_pred[5:].sum() > 6
+            # half_check = idcs_pred[5:].sum() > 6
+            half_check = np.all(idcs_pred[3:9])
             if half_check:
                 idcs_pred = np.flatnonzero(idcs_pred)
                 self.seg_pred[idcs_pred] = new_pred[idcs_pred]
@@ -227,12 +227,19 @@ class ModelManager:
                 self.seg_conf[:] = conf_arr[idx:idx + self.medium.b_pixels]
 
             if plot_steps:
-                plot_comps_detect(x_arr[idx:idx + self.medium.b_pixels],
-                                  y_arr[idx, -self.medium.b_pixels:, 0],
+                plot_comps_detect(x_arr, y_arr, self.medium.b_pixels,
                                   idx, counts, self.medium,
                                   new_pred[0],
                                   pred_arr[idx:idx + self.medium.b_pixels],
                                   self.seg_pred[:])
+
+                # plot_comps_detect(x_arr[idx:idx + self.medium.b_pixels],
+                #                   y_arr[idx, -self.medium.b_pixels:, 0],
+                #                   idx, counts, self.medium,
+                #                   new_pred[0],
+                #                   pred_arr[idx:idx + self.medium.b_pixels],
+                #                   self.seg_pred[:])
+
 
             # Assign new categories and confidence
             pred_arr[idx:idx + self.medium.b_pixels] = self.seg_pred[:]
@@ -243,8 +250,6 @@ class ModelManager:
 
 # Create object with default model
 model_mgr = ModelManager()
-
-
 
 
 class ComponentsDetector:

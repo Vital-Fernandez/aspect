@@ -2,6 +2,7 @@ import logging
 import numpy as np
 from .io import Aspect_Error
 from lime.fitting.lines import gaussian_model
+from matplotlib import pyplot as plt
 
 # Log variable
 _logger = logging.getLogger('aspect')
@@ -45,7 +46,6 @@ def scale_min_max(data, box_size, axis=None, scale_parameter='min-max'):
 
     if scale_parameter == 'min-max-log':
         data[:, -box_size - 1] = (np.log10(data_max_array - data_min_array)/4)[:,0]
-
 
     return
 
@@ -103,7 +103,33 @@ def broad_component_function(intensity_ratio):
     return np.sqrt(1 + np.log(intensity_ratio)/np.log(2))
 
 
-def doublet_model(wave_arr, noise_arr, cont_arr, amp, mu_line, sigma, doublet_em_sep_min, doublet_em_sep_max,
+def doublet_model(wave_arr, noise_arr, cont_arr, amp, mu_line, sigma, doublet_em_sep_max,
+                  doublet_int_min, doublet_int_max, lower_limit, upper_limit, sign=1):
+
+    # Generate intensities
+    int_diff = np.random.uniform(doublet_int_min, doublet_int_max)
+    amp1, amp2 = amp, amp * int_diff
+
+    # Clip for intensity limits
+    amp2 = np.clip(np.abs(amp2), lower_limit, upper_limit)
+
+    r = max(amp1, amp2)/min(amp1, amp2)
+    # sep_min = 1.2 + 0.15*(r - 1)
+    # sep_min = 1.3 + 0.15*(r - 1)
+    sep_min = 1.5 + 0.15*(r - 1)
+    sep = np.random.uniform(sep_min, doublet_em_sep_max)
+
+    # Generate the profiles
+    mu1 = mu_line - sep
+    mu2 = mu_line + sep
+    sigma1, sigma2 = sigma, sigma * 1
+    gauss1 = gaussian_model(wave_arr, sign*amp1, mu1, sigma1)
+    gauss2 = gaussian_model(wave_arr, sign*amp2, mu2, sigma2)
+    flux_arr = gauss1 + gauss2 + noise_arr + cont_arr
+
+    return flux_arr
+
+def doublet_model_orig(wave_arr, noise_arr, cont_arr, amp, mu_line, sigma, doublet_em_sep_min, doublet_em_sep_max,
                   doublet_int_min, doublet_int_max, lower_limit, upper_limit):
 
     # Compute the doublet

@@ -36,14 +36,9 @@ def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features=None, n
         y_test = np.vectorize(aspect_cfg['shape_number'].get)(y_test)
 
     else:
-        # feature_slice = -n_pixel_features - n_scale_features
-        # X_train, X_test, y_train, y_test = train_test_split(x_arr[:, feature_slice:],
-        #                                                     y_arr,
-        #                                                     test_size=test_fraction,
-        #                                                     random_state=random_state, shuffle=True)
-
         X_train, X_test, y_train, y_test = train_test_split(x_arr, y_arr, test_size=test_fraction,
                                                             random_state=random_state, shuffle=True)
+        y_train, y_test = np.log10(y_train), np.log10(y_test)
 
     # Crop the database if requested
     if n_pixel_features and n_scale_features:
@@ -72,8 +67,11 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
     if classification:
         print(f'\nClassification: {y_train.size/len(fit_cfg["categories"]):.0f} * {len(fit_cfg["categories"])} = {y_train.size}  points ({model_label})')
         print(f'- Settings: {fit_cfg["estimator_params"]}\n')
+        print(f'- Data set size: {X_train.shape}\n')
     else:
         print(f'Regression range: [{y_train.min():.3f}, {y_train.max():.3f}]')
+        print(f'- Settings: {fit_cfg["estimator_params"]}')
+        print(f'- Data set size: {X_train.shape}\n')
 
     start_time = time()
     ml_function = estimator(**estimator_params)
@@ -126,7 +124,7 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
         # Save results into a TOML file
         toml_path = output_folder/f'{model_label}.toml'
         output_dict = {'resuts': {'f1':f1, 'precision':pres, 'Recall':recall, 'confusion_matrix':conf_matrix_test,
-                                  'fit_time': fit_time}, 'properties': fit_cfg,}
+                                  'fit_time': end_time}, 'properties': fit_cfg,}
         with open(toml_path, 'w') as f:
             toml.dump(output_dict, f)
 
@@ -183,7 +181,7 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
                 'median_ae': float(medae),
                 'nrmse': float(nrmse),
                 'nmae': float(nmae),
-                'fit_time': float(fit_time),
+                'fit_time': float(end_time),
                 'prediction_time': float(pred_time),
             },
             'properties': fit_cfg,

@@ -7,7 +7,9 @@ from matplotlib import pyplot as plt, rc_context
 lime.theme.set_style('dark')
 
 # Read sample database
-sample_fname = './aspect_DAWN_prism_v4_measurements.csv'
+# sample_fname = '/home/vital/PycharmProjects/aspect/examples/testing_data/DAWN_data_set/aspect_DAWN_prism_v3_measurements_randomforest_v1.csv'
+sample_fname = '/home/vital/PycharmProjects/aspect/examples/testing_data/DAWN_data_set/aspect_DAWN_prism_v3_measurements_randomforest_v4.csv'
+# sample_fname = '/home/vital/PycharmProjects/aspect/examples/testing_data/DAWN_data_set/aspect_DAWN_prism_v3_measurements_MLP_v2.csv'
 sample_df = lime.load_frame(sample_fname)
 
 if np.any(pd.isnull(sample_df.z)):
@@ -66,8 +68,8 @@ with rc_context(lime.theme.fig_defaults(conf_plot)):
     fig.suptitle(f"Redshift comparison: {sample_df.index.size} galaxies, 0.37 seconds per object", fontsize=16)
 
     plt.tight_layout()
-    # plt.show()
-    plt.savefig('./redshift_estimation.png')
+    plt.show()
+    # plt.savefig('./redshift_estimation.png')
 
 # 'title': f'Dawn galaxy redshift comparison ({np.sum(idcs)}/{sample_df.index.size})',
 

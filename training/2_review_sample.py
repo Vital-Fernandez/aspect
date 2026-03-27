@@ -15,7 +15,7 @@ data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',
 
 # Plot sample
 n_points = 2500
-shape_list = ['cosmic-ray', 'white-noise', 'continuum', 'doublet-em']
+shape_list = ['cosmic-ray', 'white-noise', 'continuum', 'emission', 'doublet-em']
 sample_plotter = aspect.plots.CheckSample(data_matrix, y_arr, idx_features=12, sample_size=n_points, categories=shape_list)
 sample_plotter.show()
 

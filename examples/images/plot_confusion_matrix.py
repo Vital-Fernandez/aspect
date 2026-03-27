@@ -6,6 +6,7 @@ from sklearn.metrics import confusion_matrix
 from matplotlib import pyplot as plt, rc_context
 from lime import theme
 
+
 theme.set_style('dark')
 
 # Configuration
@@ -13,13 +14,14 @@ cfg_file = '../../training/12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 norm = sample_cfg['meta']['scale']
+algorithm_label = sample_cfg['meta']['algorithm']
 output_folder = Path(sample_cfg['meta']['results_folder'])
 fig_folder = f'/home/vital/Dropbox/Astrophysics/Tools/aspect'
 
 # Model reference
-label = f'aspect_{norm}_{version}'
+label = f'aspect_{norm}_{version}_{algorithm_label}_model'
 cfg = sample_cfg[f'randomforest_{version}']
-model_address = output_folder/'results'/f'{label}_model.joblib'
+model_address = output_folder/'results'/f'{label}.joblib'
 
 # Read the sample files:
 y_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt', dtype=str)
@@ -30,6 +32,9 @@ X_train, y_train, X_test, y_test = aspect.trainer.get_training_test_sets(data_ma
                                                                          n_pixel_features=sample_cfg[f'properties_{version}']['box_pixels'],
                                                                          n_scale_features=1)
 # Load the model
+
+'/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max-log_12_pixels_v12_randomforest_flux_model.joblib'
+'/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max-log_12_pixels_v12_randomforest_model.joblib'
 ml_function = aspect.load_model(model_address)
 y_pred = ml_function.predict(X_test)
 

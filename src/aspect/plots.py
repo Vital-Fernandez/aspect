@@ -246,9 +246,30 @@ def ax_wording(ax, ax_cfg=None, legend_cfg=None, yscale=None):
     return
 
 
-def plot_comps_detect(x_sect, y_norm, idx, counts, model, out_type, seg_pred, old_pred):
+# def plot_comps_detect(x_sect, y_norm, idx, counts, model, out_type, seg_pred, old_pred):
+def plot_comps_detect(x_arr, y_arr, b_pixels, idx, counts, model, out_type, seg_pred, old_pred):
 
-    print(f'Idx "{idx}"; counts: {counts}; Output: {model.number_feature_dict[out_type]} ({out_type})')
+    x_sect = x_arr[idx:idx + b_pixels]
+    y_norm = y_arr[idx, -b_pixels:, 0]
+
+    min_max_arr = np.power(10, y_arr[idx, 0, :] * 4)
+    std_arr = np.std(y_arr[idx, :, :] * min_max_arr, axis=0)
+    msg_scale = f'min_max = {min_max_arr.mean():.1f}±{min_max_arr.std():.1f}, std = {std_arr.mean():.1f}±{std_arr.std():.1f}'
+
+    # x_arr[idx:idx + self.medium.b_pixels],
+    #                   y_arr[idx, -self.medium.b_pixels:, 0],
+    #                   idx, counts, self.medium,
+    #                   new_pred[0],
+    #                   pred_arr[idx:idx + self.medium.b_pixels],
+    #                   self.seg_pred[:]
+
+    # print(f'Idx "{idx}"; counts: {counts}; Output: {model.number_feature_dict[out_type]} ({out_type})')
+    msg = f'Idx "{idx}"; counts:'
+    for i, value in enumerate(counts):
+        if value > 0:
+            msg += f'{' ,' if msg[-1] != ':' else ' '} {model.number_feature_dict[i]} {value}'
+    msg += f' -> Output: {model.number_feature_dict[out_type]} ({out_type})'
+    print(msg)
 
     colors_old = [cfg['colors'][model.number_feature_dict[val]] for val in old_pred]
     colors_new = [cfg['colors'][model.number_feature_dict[val]] for val in seg_pred]
@@ -259,6 +280,7 @@ def plot_comps_detect(x_sect, y_norm, idx, counts, model, out_type, seg_pred, ol
     ax.scatter(x_sect, np.zeros(x_sect.size), color=colors_old, label='Old prediction')
     ax.scatter(x_sect, np.ones(x_sect.size), color=colors_new, label='New prediction')
     ax.set_xlabel(r'Wavelength $(\AA)$')
+    ax.set_title(msg_scale)
 
     ax_secondary = ax.twinx()  # Creates a twin y-axis on the right
     ax_secondary.set_ylim(ax.get_ylim())  # Match the primary y-axis limits

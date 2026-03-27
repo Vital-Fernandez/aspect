@@ -30,7 +30,7 @@ intg_flux = data_matrix[:, 8]/data_matrix[:, 7]
 gauss_flux = data_matrix[:, 10]/data_matrix[:, 9]
 
 fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (5, 5)})
-num_entries = 5000
+num_entries = 2000
 with rc_context(fig_cfg):
     fig, ax = plt.subplots()
 

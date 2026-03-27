@@ -55,3 +55,6 @@ sample_df = lime.save_frame(sample_fname, sample_df)
 
 # (22.65/(4083 - 502)) * 60 ~ 0.38 seconds per galaxy: reading file, unit conversion, running aspect, 2 x z_key measurement
 # (25.6/(4084)) * 60 ~ 0.38 seconds per galaxy: reading file, unit conversion, running aspect, 2 x z_key measurement
+
+# 6459/(53.75*60) ~ 2 seconds per galaxy... minutes aspect_min-max-log_12_pixels_v12_randomforest_model.joblib
+# 6459/(59.86*60) ~ 2 seconds per galaxy... minutes aspect_min-max-log_12_pixels_v12_MLP_model.joblib

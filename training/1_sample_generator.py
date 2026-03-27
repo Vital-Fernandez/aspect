@@ -59,6 +59,7 @@ def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box
 
     return i_line + 1
 
+
 # Load sample
 cfg_file = '12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
@@ -129,7 +130,6 @@ doublet_em_res_min = params['doublet_em']['min_res_ratio']
 doublet_em_res_max = params['doublet_em']['max_res_ratio']
 doublet_em_int_min = params['doublet_em']['min_int_ratio']
 doublet_em_int_max = params['doublet_em']['max_int_ratio']
-doublet_em_sep_min = params['doublet_em']['min_separation']
 doublet_em_sep_max = params['doublet_em']['max_separation']
 doublet_em_int_discr = params['doublet_em']['discrepancy_factors']
 
@@ -137,7 +137,6 @@ doublet_abs_res_min = params['doublet_abs']['min_res_ratio']
 doublet_abs_res_max = params['doublet_abs']['max_res_ratio']
 doublet_abs_int_min = params['doublet_abs']['min_int_ratio']
 doublet_abs_int_max = params['doublet_abs']['max_int_ratio']
-doublet_abs_sep_min = params['doublet_abs']['min_separation']
 doublet_abs_sep_max = params['doublet_abs']['max_separation']
 doublet_abs_int_discr = params['doublet_abs']['discrepancy_factors']
 
@@ -156,7 +155,8 @@ noise_i = noise_cont
 # ---------  Loop through the conditions
 print('\nLooping through combinations')
 bar = tqdm(combinations, desc="Item", mininterval=0.2, unit=" combinations")
-
+doublet_em_counter = 0
+doublet_abs_counter = 0
 counter = 0
 comps_counter = dict.fromkeys(categories, 0)
 for idx, (int_ratio, res_ratio) in enumerate(bar):
@@ -250,46 +250,56 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
             if category_check[ 'continuum']:
                 shape = 'continuum'
                 if comps_counter[shape] < sample_size:
-                    flux_arr = gaussian_model(wave_arr, amp, mu_line, sigma) + white_noise_arr + cont_arr
+                    white_noise_arr = np.random.normal(loc=0, scale=1/int_ratio, size=params['uncrop_array_size'])
+                    flux_arr = gaussian_model(wave_arr, 1, mu_line, sigma) + white_noise_arr + cont_arr
                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
                     comps_counter[shape] += 1
 
     # Doublet-em
     if (int_ratio > doublet_em_int_min) & (int_ratio < doublet_em_int_max) & (res_ratio > doublet_em_res_min) & (res_ratio < doublet_em_res_max):
-
+        doublet_em_counter += 1
         if category_check['doublet-em']:
 
             # Generate the profile
             shape = 'doublet-em'
-            if comps_counter[shape] < sample_size:
-                flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
-                                         doublet_em_sep_min, doublet_em_sep_max,
-                                         doublet_em_int_discr[0], doublet_em_int_discr[1],
-                                         20, 5000)
-                counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                comps_counter[shape] += 1
+            for i in np.arange(3):
+                if comps_counter[shape] < sample_size:
+                    flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
+                                             doublet_em_sep_max,
+                                             doublet_em_int_discr[0], doublet_em_int_discr[1],
+                                             doublet_em_int_min, doublet_em_int_max)
+                    counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+                    comps_counter[shape] += 1
 
     # Doublet-abs
     if (int_ratio > doublet_abs_int_min) & (int_ratio < doublet_abs_int_max) & (res_ratio > doublet_abs_res_min) & (res_ratio < doublet_abs_res_max):
+        doublet_abs_counter += 1
 
         if category_check['doublet-abs']:
 
             # Generate the profile
             shape = 'doublet-abs'
-            for i in np.arange(2):
+            for i in np.arange(3):
                 if comps_counter[shape] < sample_size:
-                    flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, -amp, mu_line, sigma,
-                                             doublet_em_sep_min, doublet_em_sep_max,
+                    flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
+                                             doublet_em_sep_max,
                                              doublet_em_int_discr[0], doublet_em_int_discr[1],
-                                             20, 500)
+                                             doublet_abs_int_min, doublet_abs_int_max, sign=-1)
                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
                     comps_counter[shape] += 1
+
 
 
 # ---------  Save the results
 idcs_empty = pred_arr != ''
 data_matrix = data_matrix[idcs_empty, :]
 pred_arr = pred_arr[idcs_empty]
+
+print(f'Puto troleo: d-em = {doublet_em_counter}, d-abs = {doublet_abs_counter}')
+
+#Show produce types
+for categ, count_i in comps_counter.items():
+    print(categ, count_i)
 
 # Crop the dataset to use the same number of points as the smallest number of points
 data_matrix, pred_arr, _ = stratify_sample(data_matrix, pred_arr, randomize=True)

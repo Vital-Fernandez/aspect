@@ -1,6 +1,6 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.5.3'
+version = '0.6.0'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
 
@@ -68,10 +68,10 @@ time_labels = ['Current detection', 'Past detection']
 time = [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #undefined
         [0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #white-noise
         [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1, 1], #continuum
-        [0,  0,  0,  2,  0,  0,  1,  0,  0,  0,  0, 0], #emission
+        [0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0, 0], #emission
         [0,  0,  0,  1,  2,  1,  1,  1,  1,  0,  1, 1], #cosmic-ray
         [0,  0,  0,  1,  0,  2,  1,  0,  1,  0,  0, 0], #broad
-        [0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0, 0], #doublet_em
+        [0,  0,  0,  1,  0,  0,  2,  0,  0,  0,  0, 0], #doublet_em
         [0,  0,  0,  1,  0,  1,  1,  2,  1,  0,  0, 1], #peak
         [0,  0,  0,  1,  0,  0,  1,  0,  2,  0,  0, 0], #absorption
         [0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  0, 1], #dead-pixel
