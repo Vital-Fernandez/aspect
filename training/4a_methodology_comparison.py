@@ -17,7 +17,8 @@ output_folder = Path(sample_cfg['meta']['results_folder'])
 
 # Read the sample files:
 y_arr = np.loadtxt(output_folder/f'pred_array_reference_sample.txt', dtype=str)
-data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_reference_sample.txt', delimiter=',')
+# data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_reference_sample.txt', delimiter=',')
+data_matrix = np.loadtxt('/home/vital/Astrodata/aspect/medium_box/data_array_min-max_reference_sample.txt', delimiter=',')
 
 # x_arr.shape
 # Out[4]: (1375290, 24)
@@ -37,13 +38,14 @@ intg_flux, intg_err = data_matrix[:, 7], data_matrix[:, 8]
 gauss_flux, gauss_err = data_matrix[:, 9], data_matrix[:, 10]
 
 # Load the trained model
-model_address = Path(output_folder)/'results'/f'aspect_{norm}_{version}_flux_model.joblib'
+# model_address = Path(output_folder)/'results'/f'aspect_{norm}_{version}_flux_model.joblib'
+model_address = '/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max_12_pixels_v11_MLP_flux_model.joblib'
 ml_function = joblib.load(model_address)
 ml_flux = np.power(10, ml_function.predict(x_sample))
 
 # Config figure
-fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 400, "axes.labelsize": 20,
-                                            "xtick.labelsize": 16, "ytick.labelsize": 16})
+fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 400, "axes.labelsize": 30,
+                                            "xtick.labelsize": 16, "ytick.labelsize": 16, "axes.titlesize": 40,})
 with rc_context(fig_cfg):
 
     for idx, (ref, flux_arr, err_arr) in enumerate(zip(['True flux', 'Gaussian flux', 'Integrated flux', 'ML flux'],
@@ -51,8 +53,8 @@ with rc_context(fig_cfg):
                                                        [true_err, gauss_err, intg_err, true_err])):
 
         # Diagnostic ratio
-        diag = err_arr/flux_arr
-        # diag = np.abs(flux_arr/true_flux - 1)
+        # diag = err_arr/flux_arr
+        diag = np.abs(flux_arr/true_flux - 1)
 
         fig, ax = plt.subplots()
 
@@ -65,12 +67,14 @@ with rc_context(fig_cfg):
         # Add a colorbar on the right
         ax.set_title(ref)
         cbar = plt.colorbar(sc,)
-        cbar.set_label(r'$\frac{\sigma_{line}}{F_{line}}$ (Coefficient of variation)')
+        cbar.set_label(r'$\frac{F_{measured}}{F_{true}} - 1$')
         ax.update({'xlabel': r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Velocity dispersion in pixels)',
                    'ylabel': r'$\frac{A_{gas}}{\sigma_{noise}}$ (Signal-to-noise)'})
 
         ax.set_yscale('log')
-        ax.set_ylim(4, 100)
+        ax.set_ylim(4, 50)
         ax.set_xlim(0, 2)
         plt.tight_layout()
-        plt.show()
+        print(output_folder)
+        plt.savefig(output_folder/f'{ref}_method_accuracy.png')
+        # plt.show()
