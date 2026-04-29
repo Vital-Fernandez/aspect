@@ -246,7 +246,6 @@ def ax_wording(ax, ax_cfg=None, legend_cfg=None, yscale=None):
     return
 
 
-# def plot_comps_detect(x_sect, y_norm, idx, counts, model, out_type, seg_pred, old_pred):
 def plot_comps_detect(x_arr, y_arr, b_pixels, idx, counts, model, out_type, seg_pred, old_pred):
 
     x_sect = x_arr[idx:idx + b_pixels]
@@ -292,6 +291,7 @@ def plot_comps_detect(x_arr, y_arr, b_pixels, idx, counts, model, out_type, seg_
 
     return
 
+
 def plot_steps_backUP(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, old_pred):
 
     print(idx)
@@ -319,6 +319,7 @@ def plot_steps_backUP(spec, y_norm, idx, counts, model_mgr, out_type, seg_pred, 
     plt.show()
 
     return
+
 
 def plot_comps_detect_new(spec, theme, idx, y_norm, counts, model_mgr, out_type, old_pred, seg_pred, **kwargs):
 
@@ -376,6 +377,7 @@ def plot_comps_detect_new(spec, theme, idx, y_norm, counts, model_mgr, out_type,
         save_close_fig_swicth(kwargs.get('output_address'), 'tight', spec.fig, maximize, display_check)
 
     return
+
 
 class CheckSample:
 

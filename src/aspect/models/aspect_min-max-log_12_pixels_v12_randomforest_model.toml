@@ -1,0 +1,27 @@
+[resuts]
+f1 = 0.9606625147234599
+precision = 0.9621003125623686
+Recall = 0.9607928952544678
+confusion_matrix = [ [ "np.float64(0.1212956695176403)", "np.float64(0.0027323889380246754)", "np.float64(7.246842270830965e-05)", "np.float64(1.9764115284084453e-05)", "np.float64(0.0004891618532810902)", "np.float64(9.717356681341523e-05)", "np.float64(2.3058134498098526e-05)", "np.float64(0.00027010957554915417)",], [ "np.float64(0.003073319926675132)", "np.float64(0.11908538262503685)", "np.float64(0.0006620978620168292)", "np.float64(0.000436457545856865)", "np.float64(0.0002898736908332386)", "np.float64(0.0007971526497914062)", "np.float64(0.00030799079651031605)", "np.float64(0.0003475190270784849)",], [ "np.float64(0.0)", "np.float64(0.0037535348943690387)", "np.float64(0.11137902467385093)", "np.float64(0.009842529411474057)", "np.float64(2.4705144105105566e-05)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0)",], [ "np.float64(0.0)", "np.float64(0.0004677507283899987)", "np.float64(0.0005616302759893999)", "np.float64(0.12397041311941973)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0)",], [ "np.float64(2.964617292612668e-05)", "np.float64(0.0007823295633283429)", "np.float64(1.8117105677077413e-05)", "np.float64(0.0)", "np.float64(0.12415817221461853)", "np.float64(1.1529067249049263e-05)", "np.float64(0.0)", "np.float64(0.0)",], [ "np.float64(0.0)", "np.float64(0.0018446507598478823)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.11339167041361352)", "np.float64(0.009694298546843423)", "np.float64(6.917440349429558e-05)",], [ "np.float64(0.0)", "np.float64(2.6352153712112603e-05)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0017590062602835163)", "np.float64(0.12321608271941051)", "np.float64(0.0)",], [ "np.float64(9.882057642042226e-06)", "np.float64(0.0006390397275187306)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(0.0)", "np.float64(5.435131703123224e-05)", "np.float64(0.0)", "np.float64(0.12429652102160713)",],]
+fit_time = "np.float64(3.37)"
+
+[properties]
+box_size = 12
+sample_size = 700000
+test_sample_size_fraction = 0.1
+categories = [ "white-noise", "continuum", "cosmic-ray", "emission", "doublet-em", "dead-pixel", "absorption", "doublet-abs",]
+scale = "min-max-log"
+
+[properties.estimator]
+module = "sklearn.ensemble"
+class = "RandomForestClassifier"
+
+[properties.estimator_params]
+random_state = 42
+n_estimators = 60
+max_depth = 8
+max_features = "sqrt"
+verbose = 0
+n_jobs = 10
+min_samples_split = 2000
+min_samples_leaf = 2000
