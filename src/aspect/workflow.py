@@ -1,5 +1,5 @@
 import numpy as np
-from aspect.io import read_trained_model, DEFAULT_MODEL_ADDRESS, cfg, Aspect_Error
+from aspect.io import read_trained_model, cfg, Aspect_Error, _MODEL_FOLDER
 from aspect.tools import monte_carlo_expansion, white_noise_scale, scale_min_max
 from aspect.plots import plot_comps_detect
 # from matplotlib import pyplot as plt
@@ -8,7 +8,7 @@ from pathlib import Path
 
 CHOICE_DM = np.array(cfg['decision_matrices']['choice'])
 TIME_DM = np.array(cfg['decision_matrices']['time'])
-
+DEFAULT_MODEL_ADDRESS = _MODEL_FOLDER/cfg['models'][cfg['metadata']['default_model']]
 
 def flux_to_image(flux_array, approximation, model_2D):
 
@@ -164,7 +164,12 @@ class ModelManager:
 
         return
 
-    def reload_model(self, model_address=None, n_jobs=None):
+    def reload_model(self, model_address=None, model_key=None, n_jobs=None):
+
+        # Use model address or model reference otherwise reload the model
+        if (model_address is None) and (model_key is not None):
+            assert model_key in cfg['models'], 'Input reference not found in aspect configuration'
+            model_address = _MODEL_FOLDER / cfg['models'][model_key]
 
         # Call the constructor again
         self.__init__(model_address, n_jobs)

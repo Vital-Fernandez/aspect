@@ -34,7 +34,7 @@ X_train, y_train, X_test, y_test = aspect.trainer.get_training_test_sets(data_ma
 # Load the model
 
 '/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max-log_12_pixels_v12_randomforest_flux_model.joblib'
-'/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max-log_12_pixels_v12_randomforest_model.joblib'
+'/home/vital/Astrodata/aspect/medium_box/results/classifier-v12-RF_min-max-log_12-pixels.joblib'
 ml_function = aspect.load_model(model_address)
 y_pred = ml_function.predict(X_test)
 

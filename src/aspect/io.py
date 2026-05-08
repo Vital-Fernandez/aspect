@@ -23,7 +23,7 @@ with open(_CONF_FILE, mode="rb") as fp:
     cfg = tomllib.load(fp)
 
 # Default feature detection model
-DEFAULT_MODEL_ADDRESS = Path(_MODEL_FOLDER/'aspect_min-max-log_12_pixels_v10_model.joblib')
+# DEFAULT_MODEL_ADDRESS = Path(_MODEL_FOLDER/'classifier-v10-RF_min-max-log_12-pixels.joblib')
 
 def read_trained_model(file_address):
 

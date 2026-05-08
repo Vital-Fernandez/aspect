@@ -6,8 +6,8 @@ from aspect.workflow import model_mgr
 
 
 print(f'Antes: {model_mgr.model_address}')
-mname = '/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max-log_12_pixels_v12_randomforest_model.joblib'
-# mname = '/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max-log_12_pixels_v12_MLP_model.joblib'
+mname = '/home/vital/Astrodata/aspect/medium_box/results/classifier-v12-RF_min-max-log_12-pixels.joblib'
+# mname = '/home/vital/Astrodata/aspect/medium_box/results/classifier-v12-MLP_min-max-log_12-pixels.joblib'
 model_mgr.reload_model(model_address=mname, n_jobs=4)
 print(f'Despues: {model_mgr.model_address}')
 

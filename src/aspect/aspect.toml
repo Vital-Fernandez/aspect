@@ -3,6 +3,12 @@ name = 'aspect-stable'
 version = '0.7.dev1'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
+default_model = 'classifier_v10_RF'
+
+[models]
+classifier_v10_RF = 'classifier-v10-RF_min-max-log_12-pixels.joblib'
+classifier_v12_RF = 'classifier-v12-RF_min-max-log_12-pixels.joblib'
+classifier_v12_MLP = 'classifier-v12-MLP_min-max-log_12-pixels.joblib'
 
 [shape_number]
 undefined = 0
@@ -31,6 +37,8 @@ absorption = '#FF7C0A'          # Orange
 dead-pixel = '#8788EE'          # Purple
 trough = "#33937F"              # Dark Emerald
 doublet-abs = '#A330C9'         # Dark magenta
+
+
 
 [decision_matrices]
 
