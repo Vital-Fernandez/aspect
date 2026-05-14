@@ -1,9 +1,9 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.7.dev1'
+version = '0.7.dev3'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
-default_model = 'classifier_v10_RF'
+default_model = 'classifier_v12_RF'
 
 [models]
 classifier_v10_RF = 'classifier-v10-RF_min-max-log_12-pixels.joblib'
@@ -23,6 +23,7 @@ absorption = 8
 dead-pixel = 9
 doublet-abs = 10
 trough = 11
+sinusoid = 12
 
 [colors]
 undefined = 'black'
@@ -37,6 +38,7 @@ absorption = '#FF7C0A'          # Orange
 dead-pixel = '#8788EE'          # Purple
 trough = "#33937F"              # Dark Emerald
 doublet-abs = '#A330C9'         # Dark magenta
+sinusoid = '#A330C9'            # Dark magenta
 
 
 
@@ -47,57 +49,57 @@ decision_colors = ['#be6530', '#72a7c2']
 
                  # 0 idx row   1 idx column
 choice_labels = ['1st option', '2nd option']
-choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #undefined
-            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0, 0], #white-noise
-            [0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0, 0], #continuum
-            [0,  1,  1,  2,  0,  0,  0,  0,  0,  0,  0, 0], #emission
-            [0,  1,  1,  1,  2,  1,  1,  1,  1,  1,  1, 1], #cosmic-ray
-            [0,  1,  1,  1,  0,  2,  1,  1,  0,  0,  0, 0], #broad
-            [0,  1,  1,  1,  0,  0,  2,  0,  0,  0,  0, 0], #doublet-em
-            [0,  1,  1,  1,  0,  0,  1,  2,  1,  1,  1, 1], #peak
-            [0,  1,  1,  1,  0,  1,  1,  0,  2,  0,  0, 0], #absorption
-            [0,  1,  1,  1,  0,  1,  1,  0,  1,  2,  1, 1], #dead-pixel
-            [0,  1,  1,  1,  0,  1,  1,  0,  1,  0,  2, 0], #doublet-abs
-            [0,  1,  1,  1,  0,  1,  1,  0,  1,  0,  1, 2]] #trough
-#            u   w   c   e   c   b   d   p   a   d   d  t
-#            n   h   o   m   o   r   o   e   b   e   0  r
-#            d   i   n   i   s   o   u   a   s   a   u  o
-#            e   t   t   s   m   a   b   k   o   d   b  u
-#            f   e   i   s   i   d   l       r   -   l  g
-#            i   -   n   i   c       e       p   p   e  j
-#            n   n   u   o   -       t       t   i   t
-#            e   o   u   n   r       -       i   x   -
+choice =   [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
+            [0,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #white-noise
+            [0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #continuum
+            [0,  1,  1,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0], #emission
+            [0,  1,  1,  1,  2,  1,  1,  1,  1,  1,  1,  1,  0], #cosmic-ray
+            [0,  1,  1,  1,  0,  2,  1,  1,  0,  0,  0,  0,  0], #broad
+            [0,  1,  1,  1,  0,  0,  2,  0,  0,  0,  0,  0,  0], #doublet-em
+            [0,  1,  1,  1,  0,  0,  1,  2,  1,  1,  1,  1,  0], #peak
+            [0,  1,  1,  1,  0,  1,  1,  0,  2,  0,  0,  0,  0], #absorption
+            [0,  1,  1,  1,  0,  1,  1,  0,  1,  2,  1,  1,  0], #dead-pixel
+            [0,  1,  1,  1,  0,  1,  1,  0,  1,  0,  2,  0,  0], #doublet-abs
+            [0,  1,  1,  1,  0,  1,  1,  0,  1,  0,  1,  2,  0], #trough
+            [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2]] #sinusoid
+#            u   w   c   e   c   b   d   p   a   d   d   t   s
+#            n   h   o   m   o   r   o   e   b   e   0   r   i
+#            d   i   n   i   s   o   u   a   s   a   u   o   n
+#            e   t   t   s   m   a   b   k   o   d   b   u   u
+#            f   e   i   s   i   d   l       r   -   l   g   s
+#            i   -   n   i   c       e       p   p   e   j   o
+#            n   n   u   o   -       t       t   i   t       i
+#            e   o   u   n   r       -       i   x   -       d
 #            d   i   m       a       e       o   e   a
 #                s           y       m       n   l   b
 #                e                                   s
 
                    # 0 idx row       1 idx column
 time_labels = ['Current detection', 'Past detection']
-time = [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #undefined
-        [0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1], #white-noise
-        [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1, 1], #continuum
-        [0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0, 0], #emission
-        [0,  0,  0,  1,  2,  1,  1,  1,  1,  0,  1, 1], #cosmic-ray
-        [0,  0,  0,  1,  0,  2,  1,  0,  1,  0,  0, 0], #broad
-        [0,  0,  0,  1,  0,  0,  2,  0,  0,  0,  0, 0], #doublet_em
-        [0,  0,  0,  1,  0,  1,  1,  2,  1,  0,  0, 1], #peak
-        [0,  0,  0,  1,  0,  0,  1,  0,  2,  0,  0, 0], #absorption
-        [0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  0, 1], #dead-pixel
-        [0,  0,  0,  1,  0,  1,  1,  1,  1,  1,  2, 0], #doublet_abs
-        [0,  0,  0,  1,  0,  1,  1,  0,  1,  0,  1, 2]] #trough
-#        u   w   c   e   c   b   d   p   a   d   d  t
-#        n   h   o   m   o   r   o   e   b   e   0  r
-#        d   i   n   i   s   o   u   a   s   a   u  o
-#        e   t   t   s   m   a   b   k   o   d   b  u
-#        f   e   i   s   i   d   l       r   -   l  g
-#        i   -   n   i   c       e       p   p   e  j
-#        n   n   u   o   -       t       t   i   t
-#        e   o   u   n   r       -       i   x   -
+time = [[2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #undefined
+        [0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #white-noise
+        [0,  0,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1], #continuum
+        [0,  0,  0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  1], #emission
+        [0,  0,  0,  1,  2,  1,  1,  1,  1,  0,  1,  1,  1], #cosmic-ray
+        [0,  0,  0,  1,  0,  2,  1,  0,  1,  0,  0,  0,  1], #broad
+        [0,  0,  0,  1,  0,  0,  2,  0,  0,  0,  0,  0,  1], #doublet_em
+        [0,  0,  0,  1,  0,  1,  1,  2,  1,  0,  0,  1,  1], #peak
+        [0,  0,  0,  1,  0,  0,  1,  0,  2,  0,  0,  0,  1], #absorption
+        [0,  0,  0,  1,  1,  1,  1,  1,  1,  2,  0,  1,  1], #dead-pixel
+        [0,  0,  0,  1,  0,  1,  1,  1,  1,  1,  2,  0,  1], #doublet_abs
+        [0,  0,  0,  1,  0,  1,  1,  0,  1,  0,  1,  2,  1], #trough
+        [0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2]] #sinusoid
+#        u   w   c   e   c   b   d   p   a   d   d   t   s
+#        n   h   o   m   o   r   o   e   b   e   0   r   i
+#        d   i   n   i   s   o   u   a   s   a   u   o   n
+#        e   t   t   s   m   a   b   k   o   d   b   u   u
+#        f   e   i   s   i   d   l       r   -   l   g   s
+#        i   -   n   i   c       e       p   p   e   j   o
+#        n   n   u   o   -       t       t   i   t       i
+#        e   o   u   n   r       -       i   x   -       d
 #        d   i   m       a       e       o   e   a
 #            s           y       m       n   l   b
 #            e                                   s
-
-
 
 
 #choice =   [[0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0], #undefined

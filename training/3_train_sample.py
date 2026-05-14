@@ -2,8 +2,8 @@ import aspect
 import numpy as np
 from pathlib import Path
 
-# Configuration
-cfg_file = '12_pixels.toml'
+# ConfigurationX
+cfg_file = '24_pixels.toml'
 flux_version = False
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']

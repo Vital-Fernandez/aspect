@@ -1,0 +1,249 @@
+[meta]
+version = '24_pixels_v12'
+results_folder = '/home/vital/Astrodata/aspect/medium_box'
+#results_folder = 'D:\astro_data\aspect\medium_box'
+scale = 'min-max-log'
+name = '24_pixels_sine'
+#algorithm='randomforest'
+algorithm='RF'
+
+[properties_24_pixels_v12]
+
+# Global
+box_pixels = 24
+n_sigma = 6
+err_n_sigma = 4
+categories = ['sinusoid']
+
+# Resolution ratio (line sigma / instrument resolution) parameters
+res_ratio_min = 0.1
+instr_res = 1
+
+# Intensity ratio (line amplitude / sigma noise) parameters
+int_ratio_min = 0.001
+int_ratio_max = 10000
+int_ratio_log_base = 10000
+noise_cont = 1
+
+# Sample size
+flux_calculation = false
+int_ratio_points = 5000
+res_ratio_points = 1000
+
+#Input sample has 9346401 entries:
+#- absorption: 1449176
+#- continuum: 1281052
+#- cosmic-ray: 885378
+#- dead-pixel: 885378
+#- doublet-abs: 733950
+#- doublet-em: 687645
+#- emission: 2443822
+#- white-noise: 980000
+#Cropping to 687645 entries per category
+
+# Sinusoid configuration
+sinusoid.min_int = 10
+sinusoid.max_int = 25
+sinusoid.min_phase = -3.141593
+sinusoid.max_phase = 3.141593
+sinusoid.min_freq = 8
+sinusoid.max_freq = 15
+
+# Continuum configuration
+noise_loc = 0
+noise_min = 1
+noise_max = 100.0
+
+cont_level = 0
+angle_min = -45
+angle_max = 45
+
+mu_line = 0
+uncrop_array_size = 400
+
+# Cosmic ray
+#cosmic-ray.'cosmic_ray_boundary' = 100
+cosmic-ray.'cosmic_ray_low_boundary' = 3
+
+# absorption
+absorption.max_int_ratio = 500
+
+# White noise
+white_noise.'min_int_ratio' = 0.001
+white_noise.'max_int_ratio' = 0.02
+
+# Doublet-em
+doublet_em.'min_res_ratio' = 1
+doublet_em.'max_res_ratio' = 1.6
+doublet_em.'min_int_ratio' = 20
+doublet_em.'max_int_ratio' = 3000
+doublet_em.'max_separation' = 3
+doublet_em.'discrepancy_factors' = [0.3, 3]
+
+# Doublet-abs
+doublet_abs.'min_res_ratio' = 1
+doublet_abs.'max_res_ratio' = 1.6
+doublet_abs.'min_int_ratio' = 20
+doublet_abs.'max_int_ratio' = 500
+doublet_abs.'max_separation' = 3
+doublet_abs.'discrepancy_factors' = [0.7, 3]
+
+[RF_24_pixels_v12]
+box_size = 24
+sample_size = 280000
+test_sample_size_fraction = 0.1
+categories = ['sinusoid']
+shape_number.sinusoid = 12
+estimator."module" = "sklearn.ensemble"
+estimator."class" = "IsolationForest"
+estimator_params."random_state" = 42
+estimator_params."n_estimators" = 100
+estimator_params."contamination" = "auto"
+estimator_params."n_jobs" = 10
+
+
+[randomforest_12_pixels_v12]
+box_size = 12
+sample_size = 700000
+test_sample_size_fraction = 0.1
+
+categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet-em', 'dead-pixel', 'absorption', 'doublet-abs']
+estimator."module" = "sklearn.ensemble"
+estimator."class" = "RandomForestClassifier"
+estimator_params."random_state" = 42
+estimator_params."n_estimators" = 60
+estimator_params."max_depth" = 8
+estimator_params."max_features" = 'sqrt'
+estimator_params."verbose" = 0
+estimator_params."n_jobs" = 10
+estimator_params."min_samples_split" = 2000
+estimator_params."min_samples_leaf" = 2000
+
+[MLP_12_pixels_v12]
+
+box_size = 12
+sample_size = 650000
+test_sample_size_fraction = 0.1
+
+categories = ['white-noise', 'continuum', 'cosmic-ray', 'emission', 'doublet-em', 'dead-pixel', 'absorption', 'doublet-abs']
+
+estimator."module" = "sklearn.neural_network"
+estimator."class" = "MLPClassifier"
+
+estimator_params."hidden_layer_sizes" = [256, 128, 64]
+estimator_params."activation" = "relu"
+estimator_params."solver" = "adam"
+estimator_params."learning_rate_init" = 0.001
+estimator_params."max_iter" = 200
+estimator_params."early_stopping" = true
+estimator_params."validation_fraction" = 0.1
+estimator_params."n_iter_no_change" = 15
+estimator_params."batch_size" = 1024
+estimator_params."random_state" = 42
+estimator_params."verbose" = true
+
+[MLP_flux_12_pixels_v12]
+
+box_size = 12
+sample_size = 650000
+test_sample_size_fraction = 0.1
+
+estimator.module = "sklearn.neural_network"
+estimator.class = "MLPRegressor"
+estimator_params.hidden_layer_sizes = [256, 128, 64]
+estimator_params.activation = "relu"
+estimator_params.solver = "adam"
+estimator_params.learning_rate_init = 0.001
+estimator_params.max_iter = 200
+estimator_params.early_stopping = true
+estimator_params.validation_fraction = 0.1
+estimator_params.n_iter_no_change = 15
+estimator_params.batch_size = 1024
+estimator_params.random_state = 42
+estimator_params.verbose = true
+
+[randomforest_flux_12_pixels_v12]
+box_size = 12
+sample_size = 650000
+test_sample_size_fraction = 0.1
+
+estimator."module" = "sklearn.ensemble"
+estimator."class" = "RandomForestRegressor"
+#estimator."class" = "GradientBoostingRegressor"
+
+estimator_params."criterion" = "squared_error"
+estimator_params."random_state" = 42
+estimator_params."n_estimators" = 80
+estimator_params."max_depth" = 10
+estimator_params."max_features" = "sqrt"
+estimator_params."verbose" = 0
+estimator_params."n_jobs" = 10
+
+estimator_params."bootstrap" = true
+estimator_params."oob_score" = true
+estimator_params."min_samples_split" = 200
+estimator_params."min_samples_leaf" = 100
+
+#estimator."module" = "sklearn.ensemble"
+#estimator."class" = "GradientBoostingRegressor"
+#estimator_params.loss = "huber"          # robust to outliers, good alternative to your log-transform fix
+#estimator_params.learning_rate = 0.05    # low learning rate = more robust, pair with high n_estimators
+#estimator_params.n_estimators = 300      # GB needs more trees than RF to compensate for low learning rate
+#estimator_params.max_depth = 5           # shallower than your RF (10) — GB trees should be weak learners
+#estimator_params.max_features = "sqrt"   # same as your RF
+#estimator_params.min_samples_split = 200 # same as your RF
+#estimator_params.min_samples_leaf = 100  # same as your RF
+#estimator_params.random_state = 42
+#estimator_params.subsample = 1         # use 80% of data per tree, adds randomness like RF's bootstrap
+
+
+
+#estimator."module" = "lightgbm"
+#estimator."class" = "LGBMRegressor"
+#
+#estimator_params.objective = "huber"
+#estimator_params.learning_rate = 0.05
+#estimator_params.n_estimators = 300
+#estimator_params.max_depth = 5
+#estimator_params.colsample_bytree = 0.3
+#estimator_params.min_child_samples = 100
+#estimator_params.subsample = 1
+#estimator_params.subsample_freq = 1
+#estimator_params.random_state = 42
+#estimator_params.n_jobs = 10
+
+[reference_sample]
+
+# Global
+box_pixels = 12
+n_sigma = 6
+err_n_sigma = 4
+categories = ['emission']
+
+# Resolution ratio (line sigma / instrument resolution) parameters
+res_ratio_min = 0.1
+instr_res = 1
+
+# Intensity ratio (line amplitude / sigma noise) parameters
+int_ratio_min = 1
+int_ratio_max = 100
+int_ratio_log_base = 10000
+noise_cont = 1
+
+# Sample size
+flux_calculation = true
+int_ratio_points = 100
+res_ratio_points = 100
+
+# Continuum configuration
+noise_loc = 0
+noise_min = 1
+noise_max = 100.0
+
+cont_level = 0
+angle_min = -45
+angle_max = 45
+
+mu_line = 0
+uncrop_array_size = 400
+
