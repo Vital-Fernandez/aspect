@@ -18,10 +18,6 @@ output_folder = Path(sample_cfg['meta']['results_folder'])
 # Read the sample files:
 y_arr = np.loadtxt(output_folder/f'pred_array_reference_sample.txt', dtype=str)
 data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_reference_sample.txt', delimiter=',')
-
-
-# x_arr.shape
-# Out[4]: (1375290, 24)
 data_matrix = data_matrix[::3]
 
 #      5         6          7         8           9           10
@@ -58,10 +54,6 @@ with rc_context(fig_cfg):
         ax.update({'xlabel': r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Velocity dispersion in pixels)',
                    'ylabel': r'$\frac{A_{gas}}{\sigma_{noise}}$ (Signal-to-noise)'})
 
-        # ax.set_yscale('log')
-        # plt.tight_layout()
-        # plt.show()
-
         detection_range = np.linspace(res_ratio.min(), res_ratio.max(), num=50)
         ax.plot(detection_range, detection_function(detection_range))
         ax.plot(detection_range, cosmic_ray_function(detection_range))
@@ -79,20 +71,6 @@ ml_function = joblib.load(model_address)
 ml_arr = np.power(10, ml_function.predict(x_sample))
 relative_error = (np.abs(ml_arr - true_flux)/true_flux) * 100
 
-
-# idcs_max = np.where(relative_error > 50)[0]
-# for i, idx in enumerate(idcs_max):
-#     fig, ax = plt.subplots()
-#     AI_i = np.power(10, ml_function.predict(np.atleast_2d(x_sample[idx, :]))[0])
-#
-#     label = f'AI_i = {AI_i:0.3f}, SN = {res_ratio[idx]:0.3f}, sig_pix = {sn_ratio[idx]:0.3f}'
-#     title = (f'({i}/{len(idcs_max)}): True = {true_flux[idx]:0.3f}, AI = {ml_arr[idx]:0.3f},  '
-#              f'Gauss = {gauss_flux[idx]:0.3f}, Intg = {intg_flux[idx]:0.3f}')
-#
-#     ax.step(np.arange(12), x_sample[idx, 1:], label=label)
-#     ax.set_title(title)
-#     ax.legend()
-#     plt.show()
 
 # Accuracy maps
 fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 400,

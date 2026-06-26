@@ -17,15 +17,17 @@ for column in ['References', 'comment']:
 
 # Index the selection
 idcs_match = np.isclose(df.zfit.to_numpy(), df.z.to_numpy(), rtol=0.05)
-idcs = (df.grade == 3) & idcs_match & (df.Ha > 20) & (df.z > 0.5) & (df.z < 6.0)
-print(f'Total entries: {df.loc[idcs].shape[0]}')
+idcs = (df.grade > 0) & idcs_match & (df.z > 0.5) & (df.z < 10.0) & df.file.str.contains('prism')
 df_selection = df.loc[idcs]
 df_selection = df_selection.reset_index(drop=True)
+print(f'Total entries: {df.loc[idcs].shape[0]}')
 
 df_selection.insert(13, 'zkey', np.nan)
 df_selection.insert(14, 'zxor', np.nan)
+df_selection.insert(14, 'capers_flag', np.nan)
 
-fname = './aspect_DAWN_prism_v3_selection.csv'
+# Save the file
+fname = './aspect_DAWN_prism_v5_flags1-2-3_selection.csv'
 lime.save_frame(fname, df_selection)
 
 # Histogram with the redshifts
@@ -35,7 +37,9 @@ ax.set_xlabel('Redshift $z$')
 ax.set_ylabel('Number of objects')
 ax.set_title(f'JWST DAWN spectra selection (N = {df_selection.index.size}/{df.index.size})')
 plt.tight_layout()
+# plt.show()
 plt.savefig('./DAWN_prism_v3_selection.png')
+
 
 # Download the spectra
 BASE_URL = 'https://s3.amazonaws.com/msaexp-nirspec/extractions/'
@@ -48,8 +52,9 @@ for root in np.unique(root_arr):
     subfolder = output_dir/root
     subfolder.mkdir(parents=True, exist_ok=True)
 
+total = len(urls)
 for i, url in enumerate(urls):
-    print(f"Downloading {file_arr[i]} ...")
+    print(f"{i}/{total} Downloading {file_arr[i]} ...")
     saving_path = output_dir / root_arr[i] / file_arr[i]
 
     if not saving_path.is_file():
@@ -61,5 +66,4 @@ for i, url in enumerate(urls):
             print(f" - Saved to {saving_path}")
         else:
             print(f" - Failed to download {url} (status code: {response.status_code})")
-    else:
-        print(f" - File already exists")
+

@@ -3,9 +3,9 @@ import logging
 import numpy as np
 from matplotlib import pyplot as plt, gridspec, colors, rc_context
 from .io import Aspect_Error, cfg
-from lime.plotting.plots import theme
 from .tools import detection_function, stratify_sample
 import matplotlib.patheffects as path_effects
+from lime.plotting.plots import theme
 
 _logger = logging.getLogger("aspect")
 

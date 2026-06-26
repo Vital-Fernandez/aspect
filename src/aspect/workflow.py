@@ -134,7 +134,8 @@ class DetectionModel:
         self.pixels_range = np.arange(self.b_pixels)
 
         # Components names and number variables
-        self.feature_number_dict = cfg['shape_number']
+        # self.feature_number_dict = cfg['shape_number']
+        self.feature_number_dict = self.cfg['properties'].get('shape_number', cfg['shape_number'])
         self.number_feature_dict = {v: k for k, v in self.feature_number_dict.items()}
         self.n_categories = len(self.feature_number_dict)
 
@@ -187,6 +188,76 @@ class ModelManager:
         return y_pred
 
     def review_prediction(self, x_arr, y_arr, pred_matrix, model, exclude_continuum, plot_steps=True):
+
+        if model.n_categories > 1:
+            count_categories = np.apply_along_axis(np.bincount, axis=1, arr=pred_matrix, minlength=self.medium.n_categories)
+        else:
+            count_categories = np.apply_along_axis(np.bincount, axis=1, arr=pred_matrix, minlength=self.medium.n_categories + 12)
+
+        # Exclude white-noise regions from review:
+        if exclude_continuum:
+            idcs_detection = np.flatnonzero(count_categories[:, 1] < self.white_noise_maximum)
+        else:
+            idcs_detection = np.arange(pred_matrix.shape[0])
+
+        # Containers for total
+        pred_arr = np.zeros(pred_matrix.shape[0] + model.b_pixels)
+        conf_arr = np.zeros(pred_matrix.shape[0] + model.b_pixels)
+
+        self.seg_pred = np.zeros(self.medium.b_pixels, dtype=np.int64)
+        self.seg_conf = np.zeros(self.medium.b_pixels, dtype=np.int64)
+
+        for idx in idcs_detection:
+
+            # Get segment arrays
+            self.seg_pred[:] = pred_arr[idx:idx + self.medium.b_pixels]
+            self.seg_conf[:] = conf_arr[idx:idx + self.medium.b_pixels]
+
+            # Count
+            counts = count_categories[idx, :]
+            idcs_categories = counts > self.detection_min
+
+            # Choice selection
+            out_type, out_confidence = detection_evaluation(counts, idcs_categories)
+
+            # Time detection
+            idcs_pred, new_pred, new_conf = detection_revision(self.seg_pred, self.medium.b_pixels, out_type,
+                                                               out_confidence)
+
+            # Only pass if more than half
+            # half_check = idcs_pred[5:].sum() > 6
+            half_check = np.all(idcs_pred[3:9])
+            if half_check:
+                idcs_pred = np.flatnonzero(idcs_pred)
+                self.seg_pred[idcs_pred] = new_pred[idcs_pred]
+                self.seg_conf[idcs_pred] = new_conf[idcs_pred]
+            else:
+                self.seg_pred[:] = pred_arr[idx:idx + self.medium.b_pixels]
+                self.seg_conf[:] = conf_arr[idx:idx + self.medium.b_pixels]
+
+            if plot_steps:
+                plot_comps_detect(x_arr, y_arr, self.medium.b_pixels,
+                                  idx, counts, self.medium,
+                                  new_pred[0],
+                                  pred_arr[idx:idx + self.medium.b_pixels],
+                                  self.seg_pred[:])
+
+                # plot_comps_detect(x_arr[idx:idx + self.medium.b_pixels],
+                #                   y_arr[idx, -self.medium.b_pixels:, 0],
+                #                   idx, counts, self.medium,
+                #                   new_pred[0],
+                #                   pred_arr[idx:idx + self.medium.b_pixels],
+                #                   self.seg_pred[:])
+
+
+            # Assign new categories and confidence
+            pred_arr[idx:idx + self.medium.b_pixels] = self.seg_pred[:]
+            conf_arr[idx:idx + self.medium.b_pixels] = self.seg_conf[:]
+
+        return pred_arr, conf_arr
+
+
+    def review_prediction_orig(self, x_arr, y_arr, pred_matrix, model, exclude_continuum, plot_steps=True):
 
         count_categories = np.apply_along_axis(np.bincount, axis=1, arr=pred_matrix, minlength=self.medium.n_categories)
 
@@ -321,7 +392,14 @@ class ComponentsDetector:
         # Run the prediction
         y_pred = data_arr.transpose(0, 2, 1).reshape(-1, model.b_pixels + 1)
 
-        return model.predictor.predict(y_pred).reshape(-1, 100)
+        if model.n_categories > 1:
+            return model.predictor.predict(y_pred).reshape(-1, 100)
+
+        else:
+            y_pred = model.predictor.predict(y_pred).reshape(-1, 100)
+            y_pred[y_pred == - 1] = 0
+            y_pred[y_pred == 1] = list(model.number_feature_dict.keys())[0]
+            return y_pred
 
     def transform_category(self, input_category, segment_flux):
 
