@@ -3,7 +3,7 @@ import aspect
 from pathlib import Path
 
 # Configuration
-cfg_file = '24_pixels.toml' # '12_pixels.toml'
+cfg_file = '12_pixels.toml' # '24_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 norm = sample_cfg['meta']['scale']
@@ -14,9 +14,9 @@ y_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt', dtype=str)
 data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',')
 
 # Plot sample
-n_points = 2500
-# shape_list = ['cosmic-ray', 'white-noise', 'continuum', 'emission', 'doublet-em']
-shape_list = ['sinusoid']
+n_points = 2000
+shape_list = ['cosmic-ray', 'white-noise', 'continuum', 'emission', 'doublet-em']
+# shape_list = ['sinusoid']
 sample_plotter = aspect.plots.CheckSample(data_matrix, y_arr, idx_features=12, sample_size=n_points, categories=shape_list)
 sample_plotter.show()
 

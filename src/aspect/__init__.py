@@ -22,7 +22,8 @@ __version__ = _setup_cfg['metadata']['version']
 
 # Invert the dictionary of categories number
 cfg['number_shape'] =  {v: k for k, v in cfg['shape_number'].items()}
-
 from aspect.workflow import ComponentsDetector, model_mgr, CHOICE_DM, TIME_DM
 from aspect.plots import decision_matrix_plot
 from aspect.trainer import components_trainer
+
+active_model = model_mgr.model_address

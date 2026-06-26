@@ -1,6 +1,6 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.7.dev3'
+version = '0.8'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
 default_model = 'classifier_v12_RF'
@@ -39,7 +39,6 @@ dead-pixel = '#8788EE'          # Purple
 trough = "#33937F"              # Dark Emerald
 doublet-abs = '#A330C9'         # Dark magenta
 sinusoid = '#A330C9'            # Dark magenta
-
 
 
 [decision_matrices]
