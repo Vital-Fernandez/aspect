@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import aspect
 import lime
 import joblib
@@ -17,7 +16,6 @@ output_folder = Path(sample_cfg['meta']['results_folder'])
 
 # Read the sample files:
 y_arr = np.loadtxt(output_folder/f'pred_array_reference_sample.txt', dtype=str)
-# data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_reference_sample.txt', delimiter=',')
 data_matrix = np.loadtxt('/home/vital/Astrodata/aspect/medium_box/data_array_min-max_reference_sample.txt', delimiter=',')
 
 # x_arr.shape
@@ -38,7 +36,6 @@ intg_flux, intg_err = data_matrix[:, 7], data_matrix[:, 8]
 gauss_flux, gauss_err = data_matrix[:, 9], data_matrix[:, 10]
 
 # Load the trained model
-# model_address = Path(output_folder)/'results'/f'aspect_{norm}_{version}_flux_model.joblib'
 model_address = '/home/vital/Astrodata/aspect/medium_box/results/aspect_min-max_12_pixels_v11_MLP_flux_model.joblib'
 ml_function = joblib.load(model_address)
 ml_flux = np.power(10, ml_function.predict(x_sample))
