@@ -11,5 +11,3 @@ The library can be installed directly from its [PyPi](https://pypi.org/project/a
 ## Development and Citing
 
 ASPECT is currently on a beta release. Any comment/issue/request can be added as an [issue on the GitHub page](https://github.com/Vital-Fernandez/aspect/issues).
-
-```
