@@ -61,12 +61,14 @@ def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box
 
 
 # Load sample
-cfg_file = '12_pixels.toml'
+cfg_file = '12_pixels_flux.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 params = sample_cfg[f'properties_{version}']
 norm = sample_cfg['meta']['scale']
 aspect_categories = list(aspect.cfg['number_shape'].values())
+science_type = sample_cfg['meta'].get('target_science')
+flux_calculation = False
 
 # Categories for the analysis
 categories = params['categories']
@@ -86,7 +88,6 @@ int_ratio_min = params['int_ratio_min']
 int_ratio_max = params['int_ratio_max']
 int_ratio_base = params['int_ratio_log_base']
 noise_cont = params['noise_cont']
-flux_calculation = params['flux_calculation']
 
 instr_res = params['instr_res']
 sample_size = params['int_ratio_points'] * params['res_ratio_points']
@@ -171,7 +172,7 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
 
     # Reference values
     detection_value = detection_function(res_ratio)
-    cosmic_ray_res = cosmic_ray_function(int_ratio, res_ratio_check=False)
+    cosmic_ray_res = 0 if science_type == 'line_flux' else cosmic_ray_function(int_ratio, res_ratio_check=False)
 
     # Detection cases
     if int_ratio >= detection_value:
@@ -295,18 +296,17 @@ idcs_empty = pred_arr != ''
 data_matrix = data_matrix[idcs_empty, :]
 pred_arr = pred_arr[idcs_empty]
 
-print(f'Puto troleo: d-em = {doublet_em_counter}, d-abs = {doublet_abs_counter}')
-
 #Show produce types
 for categ, count_i in comps_counter.items():
     print(categ, count_i)
 
 # Crop the dataset to use the same number of points as the smallest number of points
 data_matrix, pred_arr, _ = stratify_sample(data_matrix, pred_arr, randomize=True)
+pred_arr = data_matrix[:, 5] if science_type == 'line_flux' else pred_arr
 
 # Two individual files per sample
-np.savetxt(output_folder/f'data_array_{version}.txt', data_matrix, fmt='%.6f', delimiter=',')
 np.savetxt(output_folder/f'pred_array_{version}.txt', pred_arr, fmt='%s')
+np.savetxt(output_folder/f'data_array_{version}.txt', data_matrix, fmt='%.6f', delimiter=',')
 
 # Clear the memory just in case
 del data_matrix
@@ -314,6 +314,18 @@ del pred_arr
 gc.collect()
 
 # Load and save a scaled version
+pred_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt')
 data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',')
+
+# Scale the features
 aspect.tools.scale_min_max(data_matrix, box_pixels, axis=1, scale_parameter=norm)
+
+# Scale the true flux
+if science_type == 'line_flux':
+    pred_arr = np.log10(data_matrix[:, 5])/4
+    # pred_arr = data_matrix[:, 5]
+
+# Save the normalized sample
+print(f'Saving: pred_array_{norm}_{version}.txt')
+np.savetxt(output_folder/f'pred_array_{norm}_{version}.txt', pred_arr)
 np.savetxt(output_folder/f'data_array_{norm}_{version}.txt', data_matrix, fmt='%.6f', delimiter=',')

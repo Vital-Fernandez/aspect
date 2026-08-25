@@ -6,18 +6,28 @@ import joblib
 from pathlib import Path
 from matplotlib import pyplot as plt, rc_context
 from aspect.tools import detection_function, cosmic_ray_function
-lime.theme.set_style('dark')
+from matplotlib.colors import LogNorm
+
+# lime.theme.set_style('dark')
 
 # Configuration
-cfg_file = '12_pixels.toml'
+cfg_file = '12_pixels_flux.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 norm = sample_cfg['meta']['scale']
 output_folder = Path(sample_cfg['meta']['results_folder'])
 
 # Read the sample files:
-y_arr = np.loadtxt(output_folder/f'pred_array_reference_sample.txt', dtype=str)
-data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_reference_sample.txt', delimiter=',')
+category_path = output_folder / f'pred_array_{version}.txt'
+data_matrix_path = output_folder/f'data_array_{norm}_{version}.txt'
+y_arr = np.loadtxt(category_path, dtype=str)
+data_matrix = np.loadtxt(data_matrix_path, delimiter=',')
+print(np.unique(y_arr))
+
+# Read the sample files:
+# y_arr = np.loadtxt(output_folder/f'pred_array_reference_sample.txt', dtype=str)
+# data_matrix = np.loadtxt(output_folder/f'data_array_{norm}_reference_sample.txt', delimiter=',')
+
 data_matrix = data_matrix[::3]
 
 #      5         6          7         8           9           10
@@ -28,15 +38,18 @@ true_flux, true_err = data_matrix[:, 5], data_matrix[:, 6]
 intg_flux, intg_err = data_matrix[:, 7], data_matrix[:, 8]
 gauss_flux, gauss_err = data_matrix[:, 9], data_matrix[:, 10]
 
+# Remove the true flux normalization
+true_flux = np.power(10, true_flux * 4)
+
 # Input model data (spectral features plus intensity)
-box_size = sample_cfg[f'randomforest_flux_{version}']['box_size']
+box_size = sample_cfg[f'randomforest_{version}']['box_size']
 feature_slice = -box_size - 1
 x_sample = data_matrix[:, feature_slice:]
 
 # gauss_flux = data_matrix[:, 5]
 
 # Accuracy maps
-fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 400, "axes.labelsize": 20,
+fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 200, "axes.labelsize": 20,
                                             "xtick.labelsize": 16, "ytick.labelsize": 16})
 with rc_context(fig_cfg):
 
@@ -46,7 +59,9 @@ with rc_context(fig_cfg):
 
         fig, ax = plt.subplots()
 
-        sc = ax.scatter(res_ratio, sn_ratio, c=err_arr/flux_arr, cmap='viridis', vmin=0, vmax=0.6)
+        diag = err_arr/flux_arr
+        diag = np.abs(flux_arr / true_flux - 1)
+        sc = ax.scatter(res_ratio, sn_ratio, c=diag, cmap='cubehelix_r', vmin=0, vmax=0.3)
 
         # Add a colorbar on the right
         cbar = plt.colorbar(sc,)
@@ -66,21 +81,24 @@ with rc_context(fig_cfg):
 
 
 # Load the trained model
-model_address = Path(output_folder)/'results'/f'aspect_{norm}_{version}_flux_model.joblib'
+model_address = Path(output_folder)/'results'/f'aspect_{norm}_{version}_randomforest_model.joblib'
 ml_function = joblib.load(model_address)
 ml_arr = np.power(10, ml_function.predict(x_sample))
-relative_error = (np.abs(ml_arr - true_flux)/true_flux) * 100
-
 
 # Accuracy maps
-fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 400,
+fig_cfg = lime.theme.fig_defaults(user_fig={"figure.figsize" : (8, 8), "figure.dpi" : 150,
                                             "axes.labelsize": 20, "xtick.labelsize": 16,
                                             "ytick.labelsize": 16})
 with rc_context(fig_cfg):
 
     fig, ax = plt.subplots()
 
-    sc = ax.scatter(res_ratio, sn_ratio, c=relative_error, cmap='viridis', vmin=0, vmax=100)
+    # diag = ml_arr / true_flux - 1
+
+    diag = true_err / ml_arr
+    diag = np.abs(ml_arr / true_flux - 1)
+    sc = ax.scatter(res_ratio, sn_ratio, c=diag, cmap='cubehelix_r', vmin=0, vmax=0.3)
+    # sc = ax.scatter(res_ratio, sn_ratio, c=np.log10(true_flux), cmap='cubehelix_r')
 
     detection_range = np.linspace(res_ratio.min(), res_ratio.max(), num=50)
     ax.plot(detection_range, detection_function(detection_range))

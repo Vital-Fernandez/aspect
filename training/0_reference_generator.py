@@ -34,8 +34,6 @@ def line_fitting(synth_arr, class_name, amp, sigma, noise_arr, wave_arr, instr_r
     return true_flux, true_err, intg_flux, intg_err, profile_flux, profile_err
 
 
-
-
 def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box_size, amp_i=np.nan, sigma_i=np.nan,
                noise_arr_i=np.nan, wave_arr_i=np.nan, include_fit=False):
 
@@ -60,11 +58,12 @@ def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box
     return i_line + 1
 
 # Load sample
-cfg_file = '12_pixels.toml'
+cfg_file = '12_pixels_flux.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 params = sample_cfg[f'reference_sample']
 norm = sample_cfg['meta']['scale']
 aspect_categories = list(aspect.cfg['number_shape'].values())
+science_type = sample_cfg['meta'].get('target_science')
 
 # Categories for the analysis
 categories = params['categories']
@@ -163,10 +162,11 @@ for idx, (int_ratio, res_ratio) in enumerate(bar):
 idcs_empty = pred_arr != ''
 data_matrix = data_matrix[idcs_empty, :]
 pred_arr = pred_arr[idcs_empty]
+pred_arr = data_matrix[:, 5] if science_type == 'line_flux' else pred_arr
 
 # Two individual files per sample
-np.savetxt(output_folder/f'data_array_reference_sample.txt', data_matrix, fmt='%.6f', delimiter=',')
 np.savetxt(output_folder/f'pred_array_reference_sample.txt', pred_arr, fmt='%s')
+np.savetxt(output_folder/f'data_array_reference_sample.txt', data_matrix, fmt='%.6f', delimiter=',')
 
 # Clear the memory just in case
 del data_matrix
@@ -174,6 +174,17 @@ del pred_arr
 gc.collect()
 
 # Load and save a scaled version
+pred_arr = np.loadtxt(output_folder/f'pred_array_reference_sample.txt')
 data_matrix = np.loadtxt(output_folder/f'data_array_reference_sample.txt', delimiter=',')
+
+# Scale the features
 aspect.tools.scale_min_max(data_matrix, box_pixels, axis=1, scale_parameter=norm)
+
+# Scale the true flux
+if science_type == 'line_flux':
+    pred_arr = np.log10(data_matrix[:, 5])/4
+
+# Save the normalized sample
+print(f'Output at: ', f'pred_array_{norm}_reference_sample.txt')
+np.savetxt(output_folder/f'pred_array_{norm}_reference_sample.txt', pred_arr)
 np.savetxt(output_folder/f'data_array_{norm}_reference_sample.txt', data_matrix, fmt='%.6f', delimiter=',')

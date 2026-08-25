@@ -21,6 +21,8 @@ box_size = sample_cfg[f'properties_{version}']['box_pixels']
 feature_slice = -box_size - 1
 lines_arr = data_matrix[:, feature_slice:]
 
+#      5         6          7         8           9           10
+#  true_flux, true_err, intg_flux, intg_err, profile_flux, profile_err
 sn_ratio = data_matrix[:, 0]
 res_ratio = data_matrix[:, 1]
 true_flux, true_err = data_matrix[:, 5], data_matrix[:, 6]
@@ -53,11 +55,14 @@ with rc_context(fig_cfg):
 
     for idx, (ax, ref, flux_arr, err_arr) in enumerate(zip(axes, labels, flux_arrays, err_arrays)):
 
-        # Diagnostic ratio
+        # Convert to log scale for Gaussian and integrated, ML is already in log scale
         if idx != 2:
-            diag = np.abs(flux_arr / true_flux - 1)
+            flux_diag = np.log10(flux_arr) / 4
         else:
-            diag = ml_flux / (np.log10(true_flux) / 4) - 1
+            flux_diag = flux_arr
+
+        # Diagnostic ratio — all three now in log-scaled space
+        diag = np.abs(flux_diag / (np.log10(true_flux) / 4) - 1)
 
         sc = ax.scatter(res_ratio, sn_ratio, c=diag, cmap='viridis', vmin=0, vmax=0.3)
         ax.plot(detection_range, detection_function(detection_range))
@@ -73,12 +78,11 @@ with rc_context(fig_cfg):
 
         if idx == 2:
             cbar = fig.colorbar(sc, ax=ax)
-            cbar.set_label(r'$\left|\frac{F_{measured}}{F_{true}} - 1\right|$')
+            cbar.set_label(r'$\left|\frac{\log_{10}(F_{measured})/4}{\log_{10}(F_{true})/4} - 1\right|$')
 
     fig.supxlabel(r'$\frac{\sigma_{gas}}{\Delta\lambda_{inst}} = \sigma_{pixels}$ (Velocity dispersion in pixels)',
                   fontsize=20)
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    plt.savefig(output_folder/f'methodology_comparison_log.png')
 
-    plt.tight_layout()
-    plt.show()

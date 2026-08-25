@@ -12,6 +12,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, m
 from time import time
 from pathlib import Path
 from .io import cfg as aspect_cfg
+from matplotlib.colors import LogNorm
 
 
 def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features=None, n_scale_features=None, random_state=None, classification=True):
@@ -38,7 +39,6 @@ def get_training_test_sets(x_arr, y_arr, test_fraction, n_pixel_features=None, n
     else:
         X_train, X_test, y_train, y_test = train_test_split(x_arr, y_arr, test_size=test_fraction,
                                                             random_state=random_state, shuffle=True)
-        y_train, y_test = np.log10(y_train), np.log10(y_test)
 
     # Crop the database if requested
     if n_pixel_features and n_scale_features:
@@ -54,6 +54,7 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
     print(f'\nLoading estimator: {fit_cfg["estimator"]["class"]}')
     estimator = getattr(importlib.import_module(fit_cfg['estimator']["module"]), fit_cfg['estimator']["class"])
     estimator_params = fit_cfg.get('estimator_params', {})
+    model_address = output_folder / f'{model_label}.joblib'
 
     # Split into training and testing:
     data_train, y_train, data_test, y_test = get_training_test_sets(x_arr, y_arr, test_fraction,
@@ -73,7 +74,8 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
         print(f'- Settings: {fit_cfg["estimator_params"]}')
         print(f'- Data set size: {X_train.shape}\n')
 
-    start_time = time()
+    start_time, end_time = time(), 0.0
+
     ml_function = estimator(**estimator_params)
     ml_function.fit(X_train, y_train)
     end_time = np.round((time()-start_time)/60, 2)
@@ -82,8 +84,6 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
     # Save the trained model and configuration
     output_folder = Path(output_folder)/'results'
     output_folder.mkdir(parents=True, exist_ok=True)
-
-    model_address = output_folder/f'{model_label}.joblib'
     joblib.dump(ml_function, model_address)
 
     if classification:
@@ -189,23 +189,28 @@ def components_trainer(model_label, x_arr, y_arr, fit_cfg, list_labels, output_f
 
         # Scatter plot
         fig, ax = plt.subplots()
+        idcs_limit = 50000
+        ycoords, xcoords = data_test[:, 0][:idcs_limit], data_test[:, 1][:idcs_limit],
+        fluxoords = np.abs(y_pred[:idcs_limit]/y_test[:idcs_limit] - 1)
+        sc = ax.scatter(xcoords, ycoords, c=fluxoords, cmap='viridis', vmin=0, vmax=0.3)
+        plt.colorbar(sc)
+        ax.set_yscale('log')
+        ax.set_ylim(4, 100)
+        ax.set_xlim(0, 2)
+        plt.tight_layout()
+        plt.show()
 
-        idcs_limit = 5000
-        ycoords, xcoords = data_test[:, 0], data_test[:, 1]
-        error = y_test - y_pred  # signed error
-        abs_error = np.abs(error)
-        rel_error = error / y_test
-        limit = np.percentile(rel_error, 95)
-
-        # Set the color limits
-
-        sc = ax.scatter(xcoords[:idcs_limit], ycoords[:idcs_limit], c=rel_error[:idcs_limit], s=8, cmap='viridis')
-        sc.set_clim(-limit, limit)
-
-        cbar = fig.colorbar(sc, ax=ax, label='|Prediction error|')
+        # Scatter plot
+        fig, ax = plt.subplots()
+        idcs_limit = 10000
+        ycoords, xcoords = data_test[:, 0][:idcs_limit], data_test[:, 1][:idcs_limit],
+        fluxoords = y_test[:idcs_limit] - np.log10(data_test[:, 5][:idcs_limit]) / 4
+        sc = ax.scatter(xcoords, ycoords, c=fluxoords, cmap='magma', vmin=0.001, vmax=0.3)
+        plt.colorbar(sc)
         ax.set_yscale('log')
         plt.tight_layout()
         plt.show()
+
 
         with open(toml_path, 'w') as f:
             toml.dump(output_dict, f)
