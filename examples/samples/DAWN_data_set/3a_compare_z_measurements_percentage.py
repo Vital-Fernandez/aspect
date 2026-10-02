@@ -55,19 +55,14 @@ def plot_redshift_diagnostic(sample_df, output_address=None, z_true_hdr='z',
     x_label_list = ['pixel count', 'flux sum']
     z_column = [z_pixel_hdr, z_flux_hdr]
     z_other = [z_flux_hdr, z_pixel_hdr]
-
+    print('total', n_rows)
     flag_col = sample_df[flag_hdr]
     flag_3 = (flag_col == 3).to_numpy()
     flag_2 = (flag_col == 2).to_numpy()
     flag_1 = (flag_col == 1).to_numpy()
     flag_0 = (flag_col == 0).to_numpy()
-
-    # Missing-measurement flag per technique: panel 0 (pixel) -> flag 0 ("no lines"),
-    # panel 1 (flux) -> flag 1 ("1 line"). Kept as a list so each panel can also plot
-    # the *other* technique's false negatives for direct comparison.
-    missing_flags = [flag_0, flag_1]
-    fn_colors = ['tab:green', 'tab:purple']
-    fn_labels = ['No lines detected (flag 0)', '1 line detected (flag 1)']
+    for idx, flag in enumerate([flag_3, flag_2, flag_1, flag_0]):
+        print(np.sum(flag)/float(n_rows))
 
     # Bins missed measurements
     z_bins = np.arange(0, z_limit + 0.5, 0.5)
@@ -77,6 +72,13 @@ def plot_redshift_diagnostic(sample_df, output_address=None, z_true_hdr='z',
 
     n_good, n_bad = idcs_good.sum(), idcs_bad.sum()
 
+    # Missing-measurement flag per technique: panel 0 (pixel) -> flag 0 ("no lines"),
+    # panel 1 (flux) -> flag 1 ("1 line"). Kept as a list so each panel can also plot
+    # the *other* technique's false negatives for direct comparison.
+    missing_flags = [flag_0, flag_1]
+    fn_colors = ['tab:green', 'tab:purple']
+    fn_labels = [f'No lines detected (flag 0, {100*np.sum(flag_0)/n_rows:0.0f}% of 19009)', f'1 line detected (flag 1, {100*np.sum(flag_1)/n_rows:0.0f}% of 19009)']
+    print('good', n_good)
     with rc_context(lime.theme.fig_defaults(conf_plot)):
 
         # Two scatter panels, each with a right-hand (histy) marginal
@@ -137,7 +139,7 @@ def plot_redshift_diagnostic(sample_df, output_address=None, z_true_hdr='z',
             idcs_FN_other = idcs_good & missing_flags[other_idx]
             z_arr_other = sample_df.loc[idcs_FN_other, z_true_hdr].to_numpy()
             frac_other = pct(idcs_FN_other.sum(), n_good)
-
+            print(own_color, frac_own, z_arr_own.size, n_good)
             # Own technique's false negatives (solid fill, native color)
             ax_histy.hist(z_arr_own, bins=z_bins, orientation='horizontal',
                           color=own_color, alpha=0.7)
@@ -183,5 +185,10 @@ sample_fname = f'./aspect_DAWN_prism_control_classifier-v12-RF_min-max-log_12-pi
 sample_df = lime.load_frame(sample_fname)
 sample_df = sample_df.loc[sample_df.z > 0.1]
 
+print(sample_df.z.min(), sample_df.z.max())
+print(3, np.sum(sample_df.grade == 3))
+print(2, np.sum(sample_df.grade == 2))
+print(1, np.sum(sample_df.grade == 1))
+
 idcs_good = (sample_df.grade == 3).to_numpy()
-plot_redshift_diagnostic(sample_df, output_address='DAWN_diagnostic_v36.png', idcs_good=idcs_good)
+plot_redshift_diagnostic(sample_df, output_address='DAWN_diagnostic_v37.png', idcs_good=idcs_good)

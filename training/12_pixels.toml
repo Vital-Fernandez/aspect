@@ -55,7 +55,6 @@ mu_line = 0
 uncrop_array_size = 400
 
 # Cosmic ray
-#cosmic-ray.'cosmic_ray_boundary' = 100
 cosmic-ray.'cosmic_ray_low_boundary' = 3
 
 # absorption

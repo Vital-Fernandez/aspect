@@ -94,9 +94,6 @@ with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
     ax1.fill_betweenx(vertical_range, 30, 1500, alpha=0.5, color=colors_ranges[2], edgecolor='none')
     ax1.fill_betweenx(vertical_range, 2000, 5000, alpha=0.5, color=colors_ranges[1], edgecolor='none')
     ax1.fill_betweenx(vertical_range, 5400, 17400, alpha=0.5, color=colors_ranges[0], edgecolor='none')
-    # ax1.axvspan(30, 1500, alpha=0.5, color=colors_ranges[2]) # NIRSPEC DESI VIS
-    # ax1.axvspan(2000, 5000, alpha=0.5, color=colors_ranges[1]) # DESI VIS
-    # ax1.axvspan(5400, 17400, alpha=0.5, color=colors_ranges[0])  # XSHOOTER VIS
 
     # Phenomena arrows
     ax1.annotate('', xy=(2400, 1.02), xytext=(8500,  1.02), xycoords=('data', 'axes fraction'),
@@ -137,10 +134,8 @@ with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
     ax1.text(54500, -5.95, 'SLOAN-DESI,', color='#ffdb68', fontsize=8)
     ax1.text(65000, -5.95, 'XSHOOTER', color='forestgreen', fontsize=8)
 
-    # loc = 'left', labelpad = 10)
-    #
     ax1.set_ylabel(r'$b_{pixels}$ (detection box width in pixels)')
-    ax2.set_ylabel('$\sigma_{line, pixels}$ (Gaussian sigma in pixels)')
+    ax2.set_ylabel('$\sigma_{line, pixels}$ (Velocity dispersion in pixels)')
 
     # Formula
     formula = r'$b_{pixels} =  n_{\sigma} \cdot \sigma_{pixels} = n_{\sigma} \, \frac{\sigma_{line}}{c} R$'
@@ -159,8 +154,8 @@ with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
         axins.axhline(cont, color='black', linestyle='--')
 
     # Pointing arrow
-    axins.annotate('', xy=(-4.25, 7000), xytext=(4.25, 7000), arrowprops=dict(arrowstyle='<->', color='black', lw=1))
-    axins.text((-3.25 + 3.25) / 2, 7000-1200, r'$n_{\sigma} = 8$', ha='center', va='bottom', fontsize=5, color='black',
+    axins.annotate('', xy=(-3.25, 7000), xytext=(3.25, 7000), arrowprops=dict(arrowstyle='<->', color='black', lw=1))
+    axins.text((-3.25 + 3.25) / 2, 7000-1200, r'$n_{\sigma} = 6$', ha='center', va='bottom', fontsize=5, color='black',
                bbox=dict(facecolor='white', alpha=1, edgecolor='white', boxstyle='round,pad=0.01'))
     axins.set_yscale('log')
     axins.set_xticks(range_sigma_pixels)

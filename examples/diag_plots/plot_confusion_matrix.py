@@ -7,7 +7,6 @@ from matplotlib import pyplot as plt, rc_context
 from lime import theme
 
 
-theme.set_style('dark')
 
 # Configuration
 cfg_file = '../../training/12_pixels.toml'
@@ -45,17 +44,19 @@ y_pred = np.vectorize(aspect.cfg['number_shape'].get)(y_pred)
 cm = confusion_matrix(y_test, y_pred, labels=labels)
 cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
+
+# Generate the figure
 fig_cfg = {'figure.figsize':(7, 7), 'figure.dpi': 350,
            'axes.labelsize': 12, 'axes.labelpad': 10,
            'xtick.labelsize': 10, 'ytick.labelsize': 10}
-
+# theme.set_style('dark')
 with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
 
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(7, 7), dpi=300)
 
     # Plot heatmap on the axis
-    sns.heatmap(cm_normalized, annot=True, fmt='.0%', cbar=False,
+    sns.heatmap(cm_normalized, annot=True, fmt='.0%', cbar=False, cmap='Oranges',
                 xticklabels=labels, yticklabels=labels, ax=ax, annot_kws={"size": 10})
 
     # Customize axis labels and title
@@ -74,5 +75,5 @@ with rc_context(theme.fig_defaults(user_fig=fig_cfg)):
     # ax.title.set_color("#CCCCCC")            # Title
 
     # Save and show
-    fig.savefig(f'{fig_folder}/aspect_confusion_matrix_{version}_{norm}_dark.png', bbox_inches='tight')
+    fig.savefig(f'{fig_folder}/aspect_confusion_matrix_{version}_{norm}.png', bbox_inches='tight')
     # plt.show()

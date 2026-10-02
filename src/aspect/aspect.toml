@@ -1,14 +1,9 @@
 [metadata]
 name = 'aspect-stable'
-version = '0.9'
+version = '1.0.dev0'
 category_order = ['undefined', 'white-noise', 'continuum', 'emission', 'cosmic-ray', 'broad', 'doublet-em', 'peak',
                   'absorption', 'dead-pixel', 'doublet-abs', 'trough']
 default_model = 'classifier_v12_RF'
-
-[models]
-classifier_v10_RF = 'classifier-v10-RF_min-max-log_12-pixels.joblib'
-classifier_v12_RF = 'classifier-v12-RF_min-max-log_12-pixels.joblib'
-classifier_v12_MLP ='classifier-v12-MLP_min-max-log_12-pixels.joblib'
 
 [shape_number]
 undefined = 0
@@ -24,6 +19,11 @@ dead-pixel = 9
 doublet-abs = 10
 trough = 11
 sinusoid = 12
+
+[models]
+classifier_v10_RF = 'classifier-v10-RF_min-max-log_12-pixels.joblib'
+classifier_v12_RF = 'classifier-v12-RF_min-max-log_12-pixels.joblib'
+classifier_v12_MLP ='classifier-v12-MLP_min-max-log_12-pixels.joblib'
 
 [colors]
 undefined = 'black'

@@ -6,14 +6,10 @@ import aspect
 from pathlib import Path
 import lime
 
-lime.theme.set_style('dark')
 
 # Configuration
-cfg_file = '../../training/12_pixels.toml'
-sample_cfg = aspect.load_cfg(cfg_file)
 version = '12_pixels_v8'
-
-output_folder = Path(sample_cfg['meta']['results_folder'])
+output_folder = Path('/home/vital/Astrodata/aspect/medium_box/PorSi/')
 fig_folder = Path(f'/home/vital/Dropbox/Astrophysics/Tools/aspect')
 
 # Read the sample files:
@@ -41,7 +37,7 @@ fig_cfg = {"figure.dpi" : 350,
            }
 
 conf = lime.theme.fig_defaults(fig_cfg)
-
+lime.theme.set_style('dark')
 with rc_context(conf):
 
     # Create figure and a 2x4 grid
@@ -53,7 +49,7 @@ with rc_context(conf):
     axes.append(fig.add_subplot(gs[0, 0]))  # P1
     axes.append(fig.add_subplot(gs[0, 1]))  # P2
     axes.append(fig.add_subplot(gs[0, 2]))  # P3
-    axes.append(fig.add_subplot(gs[0, 3]))  # P4 spans both rows in last column
+    axes.append(fig.add_subplot(gs[0, 3]))  # P4
     axes.append(fig.add_subplot(gs[1, 0]))  # P5
     axes.append(fig.add_subplot(gs[1, 1]))  # P6
     axes.append(fig.add_subplot(gs[1, 2]))  # P7
@@ -67,62 +63,11 @@ with rc_context(conf):
         axes[i].set_title(f"{comp.capitalize()}")
 
         axes[i].set_ylabel('')
-        axes[i].set_yticks([])  # Remove y-axis ticks
+        axes[i].set_yticks([])
         axes[i].set_yticklabels([])
         axes[i].set_xlabel('')
-        axes[i].set_xticks([])  # Remove y-axis ticks
+        axes[i].set_xticks([])
         axes[i].set_xticklabels([])
 
-
     plt.tight_layout()
-    # plt.show()
-    plt.savefig(fig_folder/'categories_example_dark.png')
-
-
-
-#     # Create 4 rows x 2 columns = 8 subplots
-#     fig, axes = plt.subplots(2, 4)
-#     axes = axes.flatten()  # Flatten to 1D array for easy indexing
-#
-#     # Plot in the first 7 axes
-#     for i, item in enumerate(target_idcs.items()):
-#         comp, idx = item
-#         y_arr = data_matrix[idx, :]
-#         axes[i].step(x_range, y_arr, where='mid', color=aspect.cfg['colors'][comp])
-#         axes[i].set_title(f"{comp.capitalize()}")
-#
-#         axes[i].set_ylabel('')
-#         axes[i].set_yticks([])  # Remove y-axis ticks
-#         axes[i].set_yticklabels([])
-#         axes[i].set_xlabel('')
-#         axes[i].set_xticks([])  # Remove y-axis ticks
-#         axes[i].set_xticklabels([])
-#
-#     # Hide the 8th (unused) axis
-#     axes[7].axis('off')
-#
-#     plt.tight_layout()
-#     plt.show()
-
-# undefined = 'black'
-# white-noise = '#C41E3A'         # Red
-# continuum = '#F48CBA'           # Pink
-# emission = '#00FF98'            # Spring Green
-# cosmic-ray= '#FFF468'           # Yellow
-# pixel-line = '#0070DD'          # Blue
-# broad = '#A330C9'               # Dark magenta
-# doublet = '#3FC7EB'             # Light blue
-# peak = '#C69B6D'                # Tan
-# absorption = '#FF7C0A'          # Orange
-# dead-pixel = '#8788EE'          # Purple
-# phl293B = "#33937F"             # Dark Emerald
-# Hbeta_OIII-doublet = "#33937F"  # Dark Emerald
-
-
-# target = 'absorption'
-# for idx_feature in np.where(y_arr == target)[0]:
-#     print(idx_feature)
-#     fig, ax = plt.subplots()
-#     ax.step(x_range, data_matrix[idx_feature, :], label=y_arr[idx_feature], color=aspect.cfg['colors'][y_arr[idx_feature]], where='mid')
-#     plt.show()
-
+    plt.show()

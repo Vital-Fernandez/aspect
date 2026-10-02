@@ -28,8 +28,6 @@ true_flux = category_arr
 sc = ax.scatter(xcoords[:idcs_limit], ycoords[:idcs_limit], c=true_flux[:idcs_limit], cmap='magma',  norm=LogNorm())
 cbar = plt.colorbar(sc)
 ax.set_yscale('log')
-# ax.set_ylim(4, 100)
-# ax.set_xlim(0, 2)
 plt.tight_layout()
 plt.show()
 

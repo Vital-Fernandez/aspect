@@ -4,7 +4,7 @@ from pathlib import Path
 from matplotlib import pyplot as plt, colors
 
 # Configuration
-cfg_file = '12_pixels_flux.toml' # '24_pixels.toml'
+cfg_file = '12_pixels.toml' # '24_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 norm = sample_cfg['meta']['scale']
@@ -24,7 +24,6 @@ if science_type != 'line_flux':
 
 # Flux measurement
 else:
-
 
     # Scatter plot
     fig, ax = plt.subplots()

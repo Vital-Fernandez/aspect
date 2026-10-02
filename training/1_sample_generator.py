@@ -61,7 +61,7 @@ def store_line(x_arr, y_arr, class_name, i_line, synth_line, x_cord, y_cord, box
 
 
 # Load sample
-cfg_file = '12_pixels_flux.toml'
+cfg_file = '12_pixels.toml'
 sample_cfg = aspect.load_cfg(cfg_file)
 version = sample_cfg['meta']['version']
 params = sample_cfg[f'properties_{version}']
@@ -76,7 +76,7 @@ category_check = {item: item in categories for item in aspect_categories}
 
 output_folder = Path(sample_cfg['meta']['results_folder'])
 output_folder.mkdir(parents=True, exist_ok=True)
-
+print()
 # Grid parameters
 n_sigma = params['n_sigma']
 err_n_sigma =  params['err_n_sigma']
@@ -141,180 +141,180 @@ doublet_abs_int_max = params['doublet_abs']['max_int_ratio']
 doublet_abs_sep_max = params['doublet_abs']['max_separation']
 doublet_abs_int_discr = params['doublet_abs']['discrepancy_factors']
 
-# --------- Containers
-print('\nGenerating containers for results')
-n_lines = sample_size * len(categories)
-
-# Features  Coordinates + Flux measurements +  Scale parameters (min, max, std)  + Scale features    + Pixel Features
-n_columns = 2                   + 6                    + 3                                + 1        + box_pixels
-
-pred_arr = np.empty(n_lines, dtype='U20')
-data_matrix = np.full((n_lines, n_columns), np.nan)
-wave_arr = mu_line + step_arr * instr_res
-noise_i = noise_cont
-
-# ---------  Loop through the conditions
-print('\nLooping through combinations')
-bar = tqdm(combinations, desc="Item", mininterval=0.2, unit=" combinations")
-doublet_em_counter = 0
-doublet_abs_counter = 0
-counter = 0
-comps_counter = dict.fromkeys(categories, 0)
-for idx, (int_ratio, res_ratio) in enumerate(bar):
-
-    # Continuum components
-    cont_arr = gradient_arr[idx] * wave_arr + cont_level
-    white_noise_arr = np.random.normal(loc=0, scale=noise_cont, size=uncrop_array_size)
-
-    # Line components
-    amp = int_ratio * noise_i
-    sigma = res_ratio * instr_res
-
-    # Reference values
-    detection_value = detection_function(res_ratio)
-    cosmic_ray_res = 0 if science_type == 'line_flux' else cosmic_ray_function(int_ratio, res_ratio_check=False)
-
-    # Detection cases
-    if int_ratio >= detection_value:
-
-        # Flux emission array
-        flux_arr = gaussian_model(wave_arr, amp, mu_line, sigma) + white_noise_arr + cont_arr
-
-        # Line
-        if res_ratio > cosmic_ray_res:
-            if category_check['emission']:
-                shape = 'emission'
-                if comps_counter[shape] < sample_size:
-                    counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
-                                         amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
-                    comps_counter[shape] += 1
-
-        # Single pixel
-        else:
-            if category_check['cosmic-ray']:
-                if int_ratio > detection_value + cr_boundary:
-                    shape = 'cosmic-ray'
-                    for i in np.arange(3):
-                        if comps_counter[shape] < sample_size:
-                            counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
-                                                 amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
-                            comps_counter[shape] += 1
-                else:
-                    shape = 'emission'
-                    if comps_counter[shape] < sample_size:
-                        counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
-                                             amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
-                        comps_counter[shape] += 1
-
-        # Flux absorption array:
-        flux_arr = gaussian_model(wave_arr, -amp, mu_line, sigma) + white_noise_arr + cont_arr
-
-        # Line
-        if res_ratio > cosmic_ray_res:
-            if int_ratio < abs_max_int_ratio:
-                if category_check['absorption']:
-                    shape = 'absorption'
-                    if comps_counter[shape] < sample_size:
-                        counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                        comps_counter[shape] += 1
-
-        # Dead pixel
-        else:
-            if category_check['dead-pixel']:
-                if int_ratio > detection_value + cr_boundary:
-                    shape = 'dead-pixel'
-                    for i in np.arange(3):
-                        if comps_counter[shape] < sample_size:
-                            counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                            comps_counter[shape] += 1
-                else:
-                    shape = 'absorption'
-                    if comps_counter[shape] < sample_size:
-                        counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                        comps_counter[shape] += 1
-
-    # Continuum
-    else:
-
-        # White noise
-        if (int_ratio >= white_noise_min_int_ratio) and (int_ratio <= white_noise_max_int_ratio):
-            if category_check['white-noise']:
-                shape = 'white-noise'
-                if comps_counter[shape] < sample_size:
-                    white_noise_arr = np.random.normal(loc=0, scale=1/int_ratio, size=params['uncrop_array_size'])
-                    flux_arr = white_noise_arr + cont_arr
-                    counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                    comps_counter[shape] += 1
-
-        # Continuum
-        else:
-            if category_check[ 'continuum']:
-                shape = 'continuum'
-                if comps_counter[shape] < sample_size:
-                    white_noise_arr = np.random.normal(loc=0, scale=1/int_ratio, size=params['uncrop_array_size'])
-                    flux_arr = gaussian_model(wave_arr, 1, mu_line, sigma) + white_noise_arr + cont_arr
-                    counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                    comps_counter[shape] += 1
-
-    # Doublet-em
-    if (int_ratio > doublet_em_int_min) & (int_ratio < doublet_em_int_max) & (res_ratio > doublet_em_res_min) & (res_ratio < doublet_em_res_max):
-        doublet_em_counter += 1
-        if category_check['doublet-em']:
-
-            # Generate the profile
-            shape = 'doublet-em'
-            for i in np.arange(3):
-                if comps_counter[shape] < sample_size:
-                    flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
-                                             doublet_em_sep_max,
-                                             doublet_em_int_discr[0], doublet_em_int_discr[1],
-                                             doublet_em_int_min, doublet_em_int_max)
-                    counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                    comps_counter[shape] += 1
-
-    # Doublet-abs
-    if (int_ratio > doublet_abs_int_min) & (int_ratio < doublet_abs_int_max) & (res_ratio > doublet_abs_res_min) & (res_ratio < doublet_abs_res_max):
-        doublet_abs_counter += 1
-
-        if category_check['doublet-abs']:
-
-            # Generate the profile
-            shape = 'doublet-abs'
-            for i in np.arange(3):
-                if comps_counter[shape] < sample_size:
-                    flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
-                                             doublet_em_sep_max,
-                                             doublet_em_int_discr[0], doublet_em_int_discr[1],
-                                             doublet_abs_int_min, doublet_abs_int_max, sign=-1)
-                    counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
-                    comps_counter[shape] += 1
-
-
-
-# ---------  Save the results
-idcs_empty = pred_arr != ''
-data_matrix = data_matrix[idcs_empty, :]
-pred_arr = pred_arr[idcs_empty]
-
-#Show produce types
-for categ, count_i in comps_counter.items():
-    print(categ, count_i)
-
-# Crop the dataset to use the same number of points as the smallest number of points
-data_matrix, pred_arr, _ = stratify_sample(data_matrix, pred_arr, randomize=True)
-pred_arr = data_matrix[:, 5] if science_type == 'line_flux' else pred_arr
-
-# Two individual files per sample
-np.savetxt(output_folder/f'pred_array_{version}.txt', pred_arr, fmt='%s')
-np.savetxt(output_folder/f'data_array_{version}.txt', data_matrix, fmt='%.6f', delimiter=',')
-
-# Clear the memory just in case
-del data_matrix
-del pred_arr
-gc.collect()
+# # --------- Containers
+# print('\nGenerating containers for results')
+# n_lines = sample_size * len(categories)
+#
+# # Features  Coordinates + Flux measurements +  Scale parameters (min, max, std)  + Scale features    + Pixel Features
+# n_columns = 2                   + 6                    + 3                                + 1        + box_pixels
+#
+# pred_arr = np.empty(n_lines, dtype='U20')
+# data_matrix = np.full((n_lines, n_columns), np.nan)
+# wave_arr = mu_line + step_arr * instr_res
+# noise_i = noise_cont
+#
+# # ---------  Loop through the conditions
+# print('\nLooping through combinations')
+# bar = tqdm(combinations, desc="Item", mininterval=0.2, unit=" combinations")
+# doublet_em_counter = 0
+# doublet_abs_counter = 0
+# counter = 0
+# comps_counter = dict.fromkeys(categories, 0)
+# for idx, (int_ratio, res_ratio) in enumerate(bar):
+#
+#     # Continuum components
+#     cont_arr = gradient_arr[idx] * wave_arr + cont_level
+#     white_noise_arr = np.random.normal(loc=0, scale=noise_cont, size=uncrop_array_size)
+#
+#     # Line components
+#     amp = int_ratio * noise_i
+#     sigma = res_ratio * instr_res
+#
+#     # Reference values
+#     detection_value = detection_function(res_ratio)
+#     cosmic_ray_res = 0 if science_type == 'line_flux' else cosmic_ray_function(int_ratio, res_ratio_check=False)
+#
+#     # Detection cases
+#     if int_ratio >= detection_value:
+#
+#         # Flux emission array
+#         flux_arr = gaussian_model(wave_arr, amp, mu_line, sigma) + white_noise_arr + cont_arr
+#
+#         # Line
+#         if res_ratio > cosmic_ray_res:
+#             if category_check['emission']:
+#                 shape = 'emission'
+#                 if comps_counter[shape] < sample_size:
+#                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
+#                                          amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
+#                     comps_counter[shape] += 1
+#
+#         # Single pixel
+#         else:
+#             if category_check['cosmic-ray']:
+#                 if int_ratio > detection_value + cr_boundary:
+#                     shape = 'cosmic-ray'
+#                     for i in np.arange(3):
+#                         if comps_counter[shape] < sample_size:
+#                             counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
+#                                                  amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
+#                             comps_counter[shape] += 1
+#                 else:
+#                     shape = 'emission'
+#                     if comps_counter[shape] < sample_size:
+#                         counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels,
+#                                              amp_i=amp, sigma_i=sigma, noise_arr_i=white_noise_arr, wave_arr_i=wave_arr, include_fit=flux_calculation)
+#                         comps_counter[shape] += 1
+#
+#         # Flux absorption array:
+#         flux_arr = gaussian_model(wave_arr, -amp, mu_line, sigma) + white_noise_arr + cont_arr
+#
+#         # Line
+#         if res_ratio > cosmic_ray_res:
+#             if int_ratio < abs_max_int_ratio:
+#                 if category_check['absorption']:
+#                     shape = 'absorption'
+#                     if comps_counter[shape] < sample_size:
+#                         counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                         comps_counter[shape] += 1
+#
+#         # Dead pixel
+#         else:
+#             if category_check['dead-pixel']:
+#                 if int_ratio > detection_value + cr_boundary:
+#                     shape = 'dead-pixel'
+#                     for i in np.arange(3):
+#                         if comps_counter[shape] < sample_size:
+#                             counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                             comps_counter[shape] += 1
+#                 else:
+#                     shape = 'absorption'
+#                     if comps_counter[shape] < sample_size:
+#                         counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                         comps_counter[shape] += 1
+#
+#     # Continuum
+#     else:
+#
+#         # White noise
+#         if (int_ratio >= white_noise_min_int_ratio) and (int_ratio <= white_noise_max_int_ratio):
+#             if category_check['white-noise']:
+#                 shape = 'white-noise'
+#                 if comps_counter[shape] < sample_size:
+#                     white_noise_arr = np.random.normal(loc=0, scale=1/int_ratio, size=params['uncrop_array_size'])
+#                     flux_arr = white_noise_arr + cont_arr
+#                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                     comps_counter[shape] += 1
+#
+#         # Continuum
+#         else:
+#             if category_check[ 'continuum']:
+#                 shape = 'continuum'
+#                 if comps_counter[shape] < sample_size:
+#                     white_noise_arr = np.random.normal(loc=0, scale=1/int_ratio, size=params['uncrop_array_size'])
+#                     flux_arr = gaussian_model(wave_arr, 1, mu_line, sigma) + white_noise_arr + cont_arr
+#                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                     comps_counter[shape] += 1
+#
+#     # Doublet-em
+#     if (int_ratio > doublet_em_int_min) & (int_ratio < doublet_em_int_max) & (res_ratio > doublet_em_res_min) & (res_ratio < doublet_em_res_max):
+#         doublet_em_counter += 1
+#         if category_check['doublet-em']:
+#
+#             # Generate the profile
+#             shape = 'doublet-em'
+#             for i in np.arange(3):
+#                 if comps_counter[shape] < sample_size:
+#                     flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
+#                                              doublet_em_sep_max,
+#                                              doublet_em_int_discr[0], doublet_em_int_discr[1],
+#                                              doublet_em_int_min, doublet_em_int_max)
+#                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                     comps_counter[shape] += 1
+#
+#     # Doublet-abs
+#     if (int_ratio > doublet_abs_int_min) & (int_ratio < doublet_abs_int_max) & (res_ratio > doublet_abs_res_min) & (res_ratio < doublet_abs_res_max):
+#         doublet_abs_counter += 1
+#
+#         if category_check['doublet-abs']:
+#
+#             # Generate the profile
+#             shape = 'doublet-abs'
+#             for i in np.arange(3):
+#                 if comps_counter[shape] < sample_size:
+#                     flux_arr = doublet_model(wave_arr, white_noise_arr, cont_arr, amp, mu_line, sigma,
+#                                              doublet_em_sep_max,
+#                                              doublet_em_int_discr[0], doublet_em_int_discr[1],
+#                                              doublet_abs_int_min, doublet_abs_int_max, sign=-1)
+#                     counter = store_line(data_matrix, pred_arr, shape, counter, flux_arr, res_ratio, int_ratio, box_pixels)
+#                     comps_counter[shape] += 1
+#
+#
+#
+# # ---------  Save the results
+# idcs_empty = pred_arr != ''
+# data_matrix = data_matrix[idcs_empty, :]
+# pred_arr = pred_arr[idcs_empty]
+#
+# #Show produce types
+# for categ, count_i in comps_counter.items():
+#     print(categ, count_i)
+#
+# # Crop the dataset to use the same number of points as the smallest number of points
+# data_matrix, pred_arr, _ = stratify_sample(data_matrix, pred_arr, randomize=True)
+# pred_arr = data_matrix[:, 5] if science_type == 'line_flux' else pred_arr
+#
+# # Two individual files per sample
+# np.savetxt(output_folder/f'pred_array_{version}.txt', pred_arr, fmt='%s')
+# np.savetxt(output_folder/f'data_array_{version}.txt', data_matrix, fmt='%.6f', delimiter=',')
+#
+# # Clear the memory just in case
+# del data_matrix
+# del pred_arr
+# gc.collect()
 
 # Load and save a scaled version
-pred_arr = np.loadtxt(output_folder/f'pred_array_{version}.txt')
+pred_arr = np.loadtxt(output_folder / f'pred_array_{version}.txt', dtype=str)
 data_matrix = np.loadtxt(output_folder/f'data_array_{version}.txt', delimiter=',')
 
 # Scale the features
@@ -327,5 +327,5 @@ if science_type == 'line_flux':
 
 # Save the normalized sample
 print(f'Saving: pred_array_{norm}_{version}.txt')
-np.savetxt(output_folder/f'pred_array_{norm}_{version}.txt', pred_arr)
+np.savetxt(output_folder / f'pred_array_{norm}_{version}.txt', pred_arr, fmt='%s')
 np.savetxt(output_folder/f'data_array_{norm}_{version}.txt', data_matrix, fmt='%.6f', delimiter=',')

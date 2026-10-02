@@ -1,12 +1,18 @@
 import logging
 import numpy as np
 from .io import Aspect_Error
-from lime.fitting.lines import gaussian_model
+# from lime.fitting.lines import gaussian_model
 from matplotlib import pyplot as plt
 
 # Log variable
 _logger = logging.getLogger('aspect')
 np.random.seed(42)
+
+
+def gaussian_model(x, amp, center, sigma):
+    """1-d gaussian curve : gaussian(x, amp, cen, wid)"""
+    return amp * np.exp(-0.5 * (((x-center)/sigma) * ((x-center)/sigma)))
+
 
 
 def monte_carlo_expansion(flux_array, err_array, n_mc, n_pixels):
